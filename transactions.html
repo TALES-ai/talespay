@@ -12,9 +12,11 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600;14..32,700&display=swap" rel="stylesheet">
-  <!-- jsPDF for PDF generation -->
+  <!-- jsPDF -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-  <!-- html2canvas for PDF rendering -->
+  <!-- html2canvas -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+  <!-- html2canvas -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
   <!-- Date range picker -->
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
@@ -61,6 +63,16 @@
       color: white;
       font-size: 2rem;
     }
+    .realtime-badge {
+      background: #0f6e4a;
+      color: white;
+      padding: 0.3rem 1rem;
+      border-radius: 40px;
+      font-size: 0.8rem;
+      display: flex;
+      align-items: center;
+      gap: 0.3rem;
+    }
     .stats-grid {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
@@ -95,11 +107,6 @@
       font-size: 2rem;
       font-weight: 700;
       color: #13294b;
-    }
-    .stat-sub {
-      font-size: 0.85rem;
-      color: #0f6e4a;
-      margin-top: 0.3rem;
     }
     .filter-section {
       background: white;
@@ -141,9 +148,6 @@
       gap: 0.5rem;
       cursor: pointer;
     }
-    .btn-filter:hover {
-      background: #1e3a5f;
-    }
     .btn-export {
       background: white;
       border: 2px solid #13294b;
@@ -156,9 +160,6 @@
       gap: 0.5rem;
       cursor: pointer;
     }
-    .btn-export:hover {
-      background: #f0f3f9;
-    }
     .transactions-table {
       background: white;
       border-radius: 24px;
@@ -167,7 +168,7 @@
     }
     .table-header {
       display: grid;
-      grid-template-columns: 1.5fr 1fr 1fr 1.2fr 1.2fr 0.8fr;
+      grid-template-columns: 1.8fr 1.2fr 0.8fr 1.5fr 1.2fr 1.2fr 0.8fr;
       padding: 1.2rem 1.5rem;
       background: #f8fafd;
       font-weight: 600;
@@ -176,7 +177,7 @@
     }
     .transaction-row {
       display: grid;
-      grid-template-columns: 1.5fr 1fr 1fr 1.2fr 1.2fr 0.8fr;
+      grid-template-columns: 1.8fr 1.2fr 0.8fr 1.5fr 1.2fr 1.2fr 0.8fr;
       padding: 1.2rem 1.5rem;
       align-items: center;
       border-bottom: 1px solid #eef2f6;
@@ -227,7 +228,27 @@
     }
     .tx-id {
       font-family: monospace;
-      font-size: 0.85rem;
+      font-size: 0.75rem;
+      color: #8a9bb5;
+    }
+    .counterparty {
+      display: flex;
+      flex-direction: column;
+    }
+    .counterparty-name {
+      font-weight: 600;
+      color: #13294b;
+    }
+    .counterparty-phone {
+      font-size: 0.8rem;
+      color: #64748b;
+    }
+    .running-balance {
+      font-weight: 700;
+      color: #13294b;
+    }
+    .balance-after {
+      font-size: 0.75rem;
       color: #64748b;
     }
     .pagination {
@@ -248,7 +269,6 @@
     .page-btn.active {
       background: #13294b;
       color: white;
-      border-color: #13294b;
     }
     .summary-card {
       background: linear-gradient(135deg, #13294b, #1e3a5f);
@@ -272,33 +292,30 @@
       font-size: 1.8rem;
       font-weight: 700;
     }
-    .no-transactions {
-      text-align: center;
-      padding: 3rem;
-      color: #64748b;
+    .new-transaction-alert {
+      background: #b22234;
+      color: white;
+      padding: 0.5rem 1rem;
+      border-radius: 40px;
+      font-size: 0.8rem;
+      animation: pulse 2s infinite;
+      cursor: pointer;
     }
-    .loading-skeleton {
-      padding: 1rem;
+    @keyframes pulse {
+      0% { opacity: 1; }
+      50% { opacity: 0.7; }
+      100% { opacity: 1; }
     }
-    .skeleton-row {
-      height: 60px;
-      background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
-      background-size: 200% 100%;
-      animation: loading 1.5s infinite;
-      border-radius: 8px;
-      margin-bottom: 0.5rem;
-    }
-    @keyframes loading {
-      0% { background-position: 200% 0; }
-      100% { background-position: -200% 0; }
+    @media (max-width: 1200px) {
+      .table-header, .transaction-row {
+        grid-template-columns: 1.5fr 1fr 0.8fr 1.2fr 1fr 1fr 0.8fr;
+        font-size: 0.9rem;
+      }
     }
     @media (max-width: 768px) {
       .table-header, .transaction-row {
         grid-template-columns: 1fr;
         gap: 0.5rem;
-      }
-      .transaction-row {
-        padding: 1rem;
       }
     }
   </style>
@@ -308,7 +325,7 @@
   <div id="header-placeholder"></div>
 
   <main class="main-content">
-    <!-- Page Header -->
+    <!-- Page Header with Realtime Indicator -->
     <div class="page-header">
       <div class="header-title">
         <div class="header-icon">
@@ -319,14 +336,14 @@
           <p style="color: #64748b; margin: 0;">Your complete financial activity</p>
         </div>
       </div>
-      <div style="display: flex; gap: 1rem;">
+      <div style="display: flex; gap: 1rem; align-items: center;">
+        <div class="realtime-badge" id="realtimeIndicator">
+          <span class="material-symbols-outlined" style="font-size: 1rem;">bolt</span>
+          Live
+        </div>
         <button class="btn-export" onclick="preparePDF()">
           <span class="material-symbols-outlined">picture_as_pdf</span>
           Export PDF
-        </button>
-        <button class="btn-filter" onclick="refreshTransactions()">
-          <span class="material-symbols-outlined">refresh</span>
-          Refresh
         </button>
       </div>
     </div>
@@ -334,31 +351,33 @@
     <!-- Summary Statistics -->
     <div class="summary-card" id="summaryStats">
       <div class="summary-item">
-        <div class="summary-label">Total Sent</div>
-        <div class="summary-value" id="totalSent">0</div>
-        <div style="font-size: 0.8rem; opacity: 0.7;">excl. fees</div>
+        <div class="summary-label">Starting Balance</div>
+        <div class="summary-value" id="startingBalance">0</div>
       </div>
       <div class="summary-item">
         <div class="summary-label">Total Received</div>
         <div class="summary-value" id="totalReceived">0</div>
       </div>
       <div class="summary-item">
-        <div class="summary-label">Total Fees Paid</div>
+        <div class="summary-label">Total Sent</div>
+        <div class="summary-value" id="totalSent">0</div>
+      </div>
+      <div class="summary-item">
+        <div class="summary-label">Fees Paid</div>
         <div class="summary-value" id="totalFees">0</div>
       </div>
       <div class="summary-item">
-        <div class="summary-label">Net Savings</div>
-        <div class="summary-value" id="totalSavings">0</div>
-        <div style="font-size: 0.8rem; opacity: 0.7;">vs M-Pesa</div>
+        <div class="summary-label">Current Balance</div>
+        <div class="summary-value" id="currentBalance">0</div>
       </div>
     </div>
 
     <!-- Filter Section -->
     <div class="filter-section">
       <div class="filter-group">
-        <input type="text" class="filter-input" id="searchInput" placeholder="Search by name, phone, ID..." onkeyup="filterTransactions()">
+        <input type="text" class="filter-input" id="searchInput" placeholder="Search by name or phone...">
         <input type="text" class="filter-input" id="dateRange" placeholder="Select date range">
-        <select class="filter-input" id="typeFilter" onchange="filterTransactions()">
+        <select class="filter-input" id="typeFilter">
           <option value="all">All Transactions</option>
           <option value="credit">Money Received</option>
           <option value="debit">Money Sent</option>
@@ -369,23 +388,30 @@
       </div>
     </div>
 
+    <!-- New Transaction Alert (hidden by default) -->
+    <div id="newTransactionAlert" class="new-transaction-alert" style="display: none; margin-bottom: 1rem;" onclick="refreshTransactions()">
+      <span class="material-symbols-outlined" style="font-size: 1rem;">pending</span>
+      New transactions available. Click to refresh.
+    </div>
+
     <!-- Transactions Table -->
-    <div class="transactions-table" id="transactionsTable">
+    <div class="transactions-table">
       <div class="table-header">
         <div>Transaction</div>
         <div>Amount</div>
         <div>Fee</div>
         <div>Counterparty</div>
+        <div>Running Balance</div>
         <div>Date & Time</div>
         <div>Status</div>
       </div>
       <div id="transactionsList">
-        <!-- Transactions will be loaded here -->
-        <div class="loading-skeleton">
-          <div class="skeleton-row"></div>
-          <div class="skeleton-row"></div>
-          <div class="skeleton-row"></div>
-          <div class="skeleton-row"></div>
+        <!-- Transactions loaded dynamically -->
+        <div style="text-align: center; padding: 3rem;">
+          <div class="spinner-border" style="color: #13294b;" role="status">
+            <span class="visually-hidden">Loading...</span>
+          </div>
+          <p style="color: #64748b; margin-top: 1rem;">Loading transactions...</p>
         </div>
       </div>
     </div>
@@ -400,60 +426,67 @@
   <!-- Footer -->
   <div id="footer-placeholder"></div>
 
-  <!-- Hidden PDF Content (for generation) -->
+  <!-- Hidden PDF Content -->
   <div id="pdf-content" style="display: none;">
     <div style="padding: 2rem; font-family: 'Inter', sans-serif;">
-      <!-- PDF Header with Logo -->
+      <!-- PDF Header -->
       <div style="display: flex; align-items: center; gap: 1rem; border-bottom: 2px solid #b22234; padding-bottom: 1rem; margin-bottom: 2rem;">
         <img src="talespay.jpg" alt="TalesPay" style="height: 50px; width: auto;" onerror="this.style.display='none';">
         <div>
           <h1 style="color: #13294b; margin: 0;">TalesPay</h1>
           <p style="color: #64748b; margin: 0;">Transaction Statement</p>
         </div>
-        <div style="margin-left: auto; text-align: right;">
-          <p style="color: #13294b; font-weight: 600;" id="pdfDate"></p>
-          <p style="color: #64748b;" id="pdfRef"></p>
-        </div>
+        <div style="margin-left: auto; text-align: right;" id="pdfHeaderDate"></div>
       </div>
 
       <!-- User Info -->
-      <div style="background: #f8fafd; padding: 1rem; border-radius: 12px; margin-bottom: 2rem;" id="pdfUserInfo">
-        <!-- Filled dynamically -->
-      </div>
+      <div style="background: #f8fafd; padding: 1rem; border-radius: 12px; margin-bottom: 2rem;" id="pdfUserInfo"></div>
 
-      <!-- Summary Stats for PDF -->
-      <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem; margin-bottom: 2rem;" id="pdfSummary">
-        <!-- Filled dynamically -->
-      </div>
+      <!-- Summary Stats -->
+      <div style="display: grid; grid-template-columns: repeat(5, 1fr); gap: 1rem; margin-bottom: 2rem;" id="pdfSummary"></div>
+
+      <!-- Transactions Table for PDF -->
+      <table style="width: 100%; border-collapse: collapse; margin-bottom: 2rem;" id="pdfTransactionsTable">
+        <thead style="background: #13294b; color: white;">
+          <tr>
+            <th style="padding: 0.8rem; text-align: left;">Date</th>
+            <th style="padding: 0.8rem; text-align: left;">Description</th>
+            <th style="padding: 0.8rem; text-align: right;">Amount</th>
+            <th style="padding: 0.8rem; text-align: right;">Fee</th>
+            <th style="padding: 0.8rem; text-align: right;">Balance</th>
+          </tr>
+        </thead>
+        <tbody id="pdfTransactionsBody"></tbody>
+      </table>
 
       <!-- Fee Structure Page -->
       <div style="page-break-before: always; margin-top: 2rem; padding-top: 2rem;">
         <h2 style="color: #13294b; border-left: 4px solid #b22234; padding-left: 1rem; margin-bottom: 2rem;">Fee Structure & Savings</h2>
         
         <table style="width: 100%; border-collapse: collapse;">
-          <thead>
-            <tr style="background: #13294b; color: white;">
-              <th style="padding: 1rem; text-align: left;">Amount Band (KES)</th>
+          <thead style="background: #13294b; color: white;">
+            <tr>
+              <th style="padding: 1rem; text-align: left;">Amount (KES)</th>
               <th style="padding: 1rem; text-align: right;">M-Pesa Fee</th>
               <th style="padding: 1rem; text-align: right;">TalesPay Fee</th>
-              <th style="padding: 1rem; text-align: right;">Your Saving</th>
+              <th style="padding: 1rem; text-align: right;">You Save</th>
             </tr>
           </thead>
           <tbody>
-            <tr><td style="padding: 0.5rem;">1-100</td><td style="text-align: right;">KES 11</td><td style="text-align: right;">KES 5</td><td style="text-align: right; color: #0f6e4a;">KES 6 (55%)</td></tr>
-            <tr><td style="padding: 0.5rem;">101-500</td><td style="text-align: right;">KES 15</td><td style="text-align: right;">KES 8</td><td style="text-align: right; color: #0f6e4a;">KES 7 (47%)</td></tr>
-            <tr><td style="padding: 0.5rem;">501-1,000</td><td style="text-align: right;">KES 21</td><td style="text-align: right;">KES 12</td><td style="text-align: right; color: #0f6e4a;">KES 9 (43%)</td></tr>
-            <tr><td style="padding: 0.5rem;">1,001-1,500</td><td style="text-align: right;">KES 26</td><td style="text-align: right;">KES 15</td><td style="text-align: right; color: #0f6e4a;">KES 11 (42%)</td></tr>
-            <tr><td style="padding: 0.5rem;">1,501-2,500</td><td style="text-align: right;">KES 31</td><td style="text-align: right;">KES 18</td><td style="text-align: right; color: #0f6e4a;">KES 13 (42%)</td></tr>
-            <tr><td style="padding: 0.5rem;">2,501-3,500</td><td style="text-align: right;">KES 36</td><td style="text-align: right;">KES 22</td><td style="text-align: right; color: #0f6e4a;">KES 14 (39%)</td></tr>
-            <tr><td style="padding: 0.5rem;">3,501-5,000</td><td style="text-align: right;">KES 46</td><td style="text-align: right;">KES 28</td><td style="text-align: right; color: #0f6e4a;">KES 18 (39%)</td></tr>
-            <tr><td style="padding: 0.5rem;">5,001-7,500</td><td style="text-align: right;">KES 62</td><td style="text-align: right;">KES 38</td><td style="text-align: right; color: #0f6e4a;">KES 24 (39%)</td></tr>
-            <tr><td style="padding: 0.5rem;">7,501-10,000</td><td style="text-align: right;">KES 87</td><td style="text-align: right;">KES 52</td><td style="text-align: right; color: #0f6e4a;">KES 35 (40%)</td></tr>
-            <tr><td style="padding: 0.5rem;">10,001-15,000</td><td style="text-align: right;">KES 108</td><td style="text-align: right;">KES 65</td><td style="text-align: right; color: #0f6e4a;">KES 43 (40%)</td></tr>
-            <tr><td style="padding: 0.5rem;">15,001-20,000</td><td style="text-align: right;">KES 157</td><td style="text-align: right;">KES 95</td><td style="text-align: right; color: #0f6e4a;">KES 62 (39%)</td></tr>
-            <tr><td style="padding: 0.5rem;">20,001-35,000</td><td style="text-align: right;">KES 167</td><td style="text-align: right;">KES 100</td><td style="text-align: right; color: #0f6e4a;">KES 67 (40%)</td></tr>
-            <tr><td style="padding: 0.5rem;">35,001-50,000</td><td style="text-align: right;">KES 197</td><td style="text-align: right;">KES 118</td><td style="text-align: right; color: #0f6e4a;">KES 79 (40%)</td></tr>
-            <tr><td style="padding: 0.5rem;">50,001-70,000</td><td style="text-align: right;">KES 247</td><td style="text-align: right;">KES 148</td><td style="text-align: right; color: #0f6e4a;">KES 99 (40%)</td></tr>
+            <tr><td>1-100</td><td style="text-align: right;">KES 11</td><td style="text-align: right;">KES 5</td><td style="text-align: right; color: #0f6e4a;">KES 6 (55%)</td></tr>
+            <tr><td>101-500</td><td style="text-align: right;">KES 15</td><td style="text-align: right;">KES 8</td><td style="text-align: right; color: #0f6e4a;">KES 7 (47%)</td></tr>
+            <tr><td>501-1,000</td><td style="text-align: right;">KES 21</td><td style="text-align: right;">KES 12</td><td style="text-align: right; color: #0f6e4a;">KES 9 (43%)</td></tr>
+            <tr><td>1,001-1,500</td><td style="text-align: right;">KES 26</td><td style="text-align: right;">KES 15</td><td style="text-align: right; color: #0f6e4a;">KES 11 (42%)</td></tr>
+            <tr><td>1,501-2,500</td><td style="text-align: right;">KES 31</td><td style="text-align: right;">KES 18</td><td style="text-align: right; color: #0f6e4a;">KES 13 (42%)</td></tr>
+            <tr><td>2,501-3,500</td><td style="text-align: right;">KES 36</td><td style="text-align: right;">KES 22</td><td style="text-align: right; color: #0f6e4a;">KES 14 (39%)</td></tr>
+            <tr><td>3,501-5,000</td><td style="text-align: right;">KES 46</td><td style="text-align: right;">KES 28</td><td style="text-align: right; color: #0f6e4a;">KES 18 (39%)</td></tr>
+            <tr><td>5,001-7,500</td><td style="text-align: right;">KES 62</td><td style="text-align: right;">KES 38</td><td style="text-align: right; color: #0f6e4a;">KES 24 (39%)</td></tr>
+            <tr><td>7,501-10,000</td><td style="text-align: right;">KES 87</td><td style="text-align: right;">KES 52</td><td style="text-align: right; color: #0f6e4a;">KES 35 (40%)</td></tr>
+            <tr><td>10,001-15,000</td><td style="text-align: right;">KES 108</td><td style="text-align: right;">KES 65</td><td style="text-align: right; color: #0f6e4a;">KES 43 (40%)</td></tr>
+            <tr><td>15,001-20,000</td><td style="text-align: right;">KES 157</td><td style="text-align: right;">KES 95</td><td style="text-align: right; color: #0f6e4a;">KES 62 (39%)</td></tr>
+            <tr><td>20,001-35,000</td><td style="text-align: right;">KES 167</td><td style="text-align: right;">KES 100</td><td style="text-align: right; color: #0f6e4a;">KES 67 (40%)</td></tr>
+            <tr><td>35,001-50,000</td><td style="text-align: right;">KES 197</td><td style="text-align: right;">KES 118</td><td style="text-align: right; color: #0f6e4a;">KES 79 (40%)</td></tr>
+            <tr><td>50,001-70,000</td><td style="text-align: right;">KES 247</td><td style="text-align: right;">KES 148</td><td style="text-align: right; color: #0f6e4a;">KES 99 (40%)</td></tr>
           </tbody>
         </table>
 
@@ -461,7 +494,7 @@
         <div style="margin-top: 3rem; text-align: center; padding: 2rem; background: linear-gradient(135deg, #13294b, #1e3a5f); color: white; border-radius: 24px;">
           <h2 style="margin-bottom: 1rem;">Thank You for Choosing TalesPay</h2>
           <p style="font-size: 1.1rem; opacity: 0.9;">"Connecting value, instantly."</p>
-          <p style="margin-top: 1rem; font-style: italic;">We appreciate your trust in our platform. Every transaction you make helps us build a better financial future for Kenya.</p>
+          <p style="margin-top: 1rem;">We appreciate your trust in our platform.</p>
           <div style="margin-top: 2rem; font-size: 0.9rem; opacity: 0.7;">©2009-2026 TalesPay™ · Regulated by the Central Bank of Kenya</div>
         </div>
       </div>
@@ -494,14 +527,15 @@
     let currentPage = 1;
     const itemsPerPage = 15;
     let allUsers = {};
+    let transactionsRef = null;
+    let lastTransactionCount = 0;
+    let userBalance = 0;
 
     // Initialize date picker
     flatpickr("#dateRange", {
       mode: "range",
       dateFormat: "Y-m-d",
-      onChange: function() {
-        filterTransactions();
-      }
+      onChange: filterTransactions
     });
 
     // Load components
@@ -518,7 +552,7 @@
         document.getElementById('footer-placeholder').innerHTML = await footerResp.text();
         
         await loadUserData();
-        await loadTransactions();
+        setupRealtimeListener();
       } catch (error) {
         console.log('Error loading components:', error);
       }
@@ -540,6 +574,14 @@
       }
 
       try {
+        // Get current user's balance from database
+        const userSnapshot = await database.ref(`users/${currentUser.userId}`).once('value');
+        const userData = userSnapshot.val();
+        if (userData) {
+          userBalance = userData.balance || 0;
+          currentUser.balance = userBalance;
+        }
+
         const usersSnapshot = await database.ref('users').once('value');
         allUsers = usersSnapshot.val() || {};
       } catch (error) {
@@ -547,86 +589,106 @@
       }
     }
 
-    // Calculate M-Pesa fee for savings comparison
-    function calculateMpesaFee(amount) {
-      if (amount <= 100) return 11;
-      if (amount <= 500) return 15;
-      if (amount <= 1000) return 21;
-      if (amount <= 1500) return 26;
-      if (amount <= 2500) return 31;
-      if (amount <= 3500) return 36;
-      if (amount <= 5000) return 46;
-      if (amount <= 7500) return 62;
-      if (amount <= 10000) return 87;
-      if (amount <= 15000) return 108;
-      if (amount <= 20000) return 157;
-      if (amount <= 35000) return 167;
-      if (amount <= 50000) return 197;
-      if (amount <= 70000) return 247;
-      return 247;
+    // Setup realtime listener
+    function setupRealtimeListener() {
+      if (transactionsRef) {
+        transactionsRef.off();
+      }
+
+      transactionsRef = database.ref('transactions')
+        .orderByChild('userId')
+        .equalTo(currentUser.userId);
+
+      transactionsRef.on('value', (snapshot) => {
+        const transactions = snapshot.val() || {};
+        const newCount = Object.keys(transactions).length;
+        
+        // Check if new transactions arrived
+        if (lastTransactionCount > 0 && newCount > lastTransactionCount) {
+          document.getElementById('newTransactionAlert').style.display = 'flex';
+        }
+        
+        lastTransactionCount = newCount;
+        processTransactions(transactions);
+      });
+
+      // Also listen for balance updates
+      database.ref(`users/${currentUser.userId}/balance`).on('value', (snapshot) => {
+        userBalance = snapshot.val() || 0;
+        updateStatistics();
+      });
     }
 
-    // Load transactions
-    async function loadTransactions() {
-      try {
-        const snapshot = await database.ref('transactions')
-          .orderByChild('userId')
-          .equalTo(currentUser.userId)
-          .once('value');
-        
-        const transactions = snapshot.val() || {};
-        
-        // Convert to array and sort by date (newest first)
-        allTransactions = Object.entries(transactions)
-          .map(([id, tx]) => ({
-            id,
-            ...tx,
-            date: new Date(tx.createdAt || Date.now())
-          }))
-          .filter(tx => !tx.isFee) // Filter out fee records from user view
-          .sort((a, b) => b.date - a.date);
-        
-        filteredTransactions = [...allTransactions];
-        updateStatistics();
-        displayTransactions();
-        updateTransactionCount();
-        
-      } catch (error) {
-        console.error('Error loading transactions:', error);
-        document.getElementById('transactionsList').innerHTML = `
-          <div class="no-transactions">
-            <span class="material-symbols-outlined" style="font-size: 3rem;">error</span>
-            <p>Error loading transactions. Please refresh.</p>
-          </div>
-        `;
-      }
+    // Process transactions
+    function processTransactions(transactions) {
+      // Convert to array and sort by date (oldest first for running balance)
+      const txArray = Object.entries(transactions)
+        .map(([id, tx]) => ({
+          id,
+          ...tx,
+          date: new Date(tx.createdAt || Date.now())
+        }))
+        .filter(tx => !tx.isFee) // Filter out fee records from main view
+        .sort((a, b) => a.date - b.date); // Oldest first for running balance
+
+      // Calculate running balances backwards from current balance
+      // Start with current balance and work backwards
+      let runningBalance = userBalance;
+      
+      // Create a copy and reverse to calculate backwards
+      const reversedTx = [...txArray].reverse();
+      
+      // Create a map of transaction IDs to their running balances
+      const balanceMap = new Map();
+      
+      reversedTx.forEach(tx => {
+        balanceMap.set(tx.id, runningBalance);
+        if (tx.type === 'credit') {
+          runningBalance -= tx.amount;
+        } else if (tx.type === 'debit') {
+          runningBalance += (tx.amount + (tx.fee || 0));
+        }
+      });
+
+      // Now assign running balances in original order
+      allTransactions = txArray.map(tx => ({
+        ...tx,
+        runningBalance: balanceMap.get(tx.id)
+      })).reverse(); // Reverse for display (newest first)
+
+      filteredTransactions = [...allTransactions];
+      updateStatistics();
+      filterTransactions(); // Apply any active filters
+      updateTransactionCount();
+      
+      // Hide new transaction alert after processing
+      document.getElementById('newTransactionAlert').style.display = 'none';
     }
 
     // Update statistics
     function updateStatistics() {
-      let totalSent = 0;
       let totalReceived = 0;
+      let totalSent = 0;
       let totalFees = 0;
-      let totalSavings = 0;
-
+      
+      // Calculate totals from transactions
       allTransactions.forEach(tx => {
-        if (tx.type === 'debit') {
+        if (tx.type === 'credit') {
+          totalReceived += tx.amount || 0;
+        } else if (tx.type === 'debit') {
           totalSent += tx.amount || 0;
           totalFees += tx.fee || 0;
-          
-          // Calculate savings vs M-Pesa
-          const mpesaFee = calculateMpesaFee(tx.amount || 0);
-          const savings = mpesaFee - (tx.fee || 0);
-          if (savings > 0) totalSavings += savings;
-        } else if (tx.type === 'credit') {
-          totalReceived += tx.amount || 0;
         }
       });
 
-      document.getElementById('totalSent').innerHTML = `KES ${totalSent.toLocaleString()}`;
+      // Starting balance = Current balance + totalSent + totalFees - totalReceived
+      const startingBalance = userBalance + totalSent + totalFees - totalReceived;
+
+      document.getElementById('startingBalance').innerHTML = `KES ${startingBalance.toLocaleString()}`;
       document.getElementById('totalReceived').innerHTML = `KES ${totalReceived.toLocaleString()}`;
+      document.getElementById('totalSent').innerHTML = `KES ${totalSent.toLocaleString()}`;
       document.getElementById('totalFees').innerHTML = `KES ${totalFees.toLocaleString()}`;
-      document.getElementById('totalSavings').innerHTML = `KES ${totalSavings.toLocaleString()}`;
+      document.getElementById('currentBalance').innerHTML = `KES ${userBalance.toLocaleString()}`;
     }
 
     // Filter transactions
@@ -641,9 +703,21 @@
 
         // Search filter
         if (searchTerm) {
-          const counterparty = tx.type === 'debit' ? tx.recipientName || '' : tx.senderName || '';
-          const phone = tx.type === 'debit' ? tx.to || '' : tx.from || '';
-          if (!counterparty.toLowerCase().includes(searchTerm) && !phone.includes(searchTerm)) return false;
+          let counterpartyName = '';
+          let counterpartyPhone = '';
+          
+          if (tx.type === 'debit') {
+            counterpartyName = tx.recipientName || '';
+            counterpartyPhone = tx.to || '';
+          } else {
+            counterpartyName = tx.senderName || '';
+            counterpartyPhone = tx.from || '';
+          }
+          
+          if (!counterpartyName.toLowerCase().includes(searchTerm) && 
+              !counterpartyPhone.includes(searchTerm)) {
+            return false;
+          }
         }
 
         // Date range filter
@@ -665,7 +739,7 @@
       updateTransactionCount();
     }
 
-    // Display transactions with pagination
+    // Display transactions
     function displayTransactions() {
       const start = (currentPage - 1) * itemsPerPage;
       const end = start + itemsPerPage;
@@ -674,7 +748,7 @@
 
       if (filteredTransactions.length === 0) {
         listContainer.innerHTML = `
-          <div class="no-transactions">
+          <div style="text-align: center; padding: 3rem; color: #64748b;">
             <span class="material-symbols-outlined" style="font-size: 3rem;">receipt</span>
             <p>No transactions found</p>
           </div>
@@ -686,11 +760,23 @@
       let html = '';
       pageTransactions.forEach(tx => {
         const isCredit = tx.type === 'credit';
-        const counterparty = isCredit ? tx.senderName || tx.from : tx.recipientName || tx.to;
-        const phone = isCredit ? tx.from || '' : tx.to || '';
+        const counterpartyName = isCredit ? tx.senderName : tx.recipientName;
+        const counterpartyPhone = isCredit ? tx.from : tx.to;
         const amount = tx.amount || 0;
         const fee = tx.fee || 0;
+        const runningBalance = tx.runningBalance || 0;
         
+        // Determine direction arrow and description
+        let direction = '';
+        let description = '';
+        if (isCredit) {
+          direction = 'from';
+          description = `Received from`;
+        } else {
+          direction = 'to';
+          description = `Sent to`;
+        }
+
         html += `
           <div class="transaction-row ${isCredit ? 'credit' : 'debit'}">
             <div class="tx-type">
@@ -698,7 +784,7 @@
                 <span class="material-symbols-outlined">${isCredit ? 'call_received' : 'call_made'}</span>
               </div>
               <div>
-                <div style="font-weight: 500;">${isCredit ? 'Received' : 'Sent'}</div>
+                <div style="font-weight: 500;">${description}</div>
                 <div class="tx-id">${tx.transactionId || tx.id}</div>
               </div>
             </div>
@@ -708,9 +794,13 @@
             <div>
               <div class="tx-fee">${fee > 0 ? `KES ${fee.toLocaleString()}` : '-'}</div>
             </div>
+            <div class="counterparty">
+              <span class="counterparty-name">${counterpartyName || 'Unknown'}</span>
+              <span class="counterparty-phone">${counterpartyPhone || ''}</span>
+            </div>
             <div>
-              <div style="font-weight: 500;">${counterparty || 'Unknown'}</div>
-              <div class="tx-fee">${phone}</div>
+              <div class="running-balance">KES ${runningBalance.toLocaleString()}</div>
+              <div class="balance-after">after transaction</div>
             </div>
             <div>
               <div>${tx.date.toLocaleDateString()}</div>
@@ -755,7 +845,12 @@
 
     // Refresh transactions
     window.refreshTransactions = function() {
-      loadTransactions();
+      document.getElementById('newTransactionAlert').style.display = 'none';
+      if (transactionsRef) {
+        transactionsRef.on('value', (snapshot) => {
+          processTransactions(snapshot.val() || {});
+        });
+      }
     };
 
     // Prepare PDF
@@ -763,7 +858,10 @@
       const { jsPDF } = window.jspdf;
       
       // Show loading
-      document.getElementById('loadingOverlay').classList.add('active');
+      const loadingOverlay = document.createElement('div');
+      loadingOverlay.className = 'loading-overlay';
+      loadingOverlay.innerHTML = '<div class="loading-spinner"></div><p>Generating PDF...</p>';
+      document.body.appendChild(loadingOverlay);
       
       try {
         // Prepare PDF content
@@ -771,11 +869,14 @@
         pdfContent.style.display = 'block';
         pdfContent.style.position = 'absolute';
         pdfContent.style.left = '-9999px';
+        pdfContent.style.background = 'white';
         document.body.appendChild(pdfContent);
 
-        // Set PDF date
-        pdfContent.querySelector('#pdfDate').textContent = new Date().toLocaleDateString();
-        pdfContent.querySelector('#pdfRef').textContent = `REF: TP${Date.now()}`;
+        // Set PDF header date
+        pdfContent.querySelector('#pdfHeaderDate').innerHTML = `
+          <p style="margin:0;"><strong>Generated:</strong> ${new Date().toLocaleDateString()}</p>
+          <p style="margin:0; font-size:0.9rem;">${new Date().toLocaleTimeString()}</p>
+        `;
 
         // Set user info
         pdfContent.querySelector('#pdfUserInfo').innerHTML = `
@@ -786,7 +887,7 @@
             </div>
             <div>
               <strong>Statement Period:</strong> All Transactions<br>
-              <strong>Generated:</strong> ${new Date().toLocaleString()}
+              <strong>Current Balance:</strong> KES ${userBalance.toLocaleString()}
             </div>
           </div>
         `;
@@ -794,27 +895,51 @@
         // Set summary stats
         pdfContent.querySelector('#pdfSummary').innerHTML = `
           <div style="background: #13294b; color: white; padding: 1rem; border-radius: 12px;">
-            <div style="font-size: 0.8rem; opacity: 0.8;">Total Sent</div>
-            <div style="font-size: 1.5rem; font-weight: 700;">${document.getElementById('totalSent').textContent}</div>
+            <div style="font-size:0.8rem;">Starting</div>
+            <div style="font-size:1.5rem; font-weight:700;">${document.getElementById('startingBalance').innerHTML}</div>
+          </div>
+          <div style="background: #0f6e4a; color: white; padding: 1rem; border-radius: 12px;">
+            <div style="font-size:0.8rem;">Received</div>
+            <div style="font-size:1.5rem; font-weight:700;">${document.getElementById('totalReceived').innerHTML}</div>
+          </div>
+          <div style="background: #b22234; color: white; padding: 1rem; border-radius: 12px;">
+            <div style="font-size:0.8rem;">Sent</div>
+            <div style="font-size:1.5rem; font-weight:700;">${document.getElementById('totalSent').innerHTML}</div>
+          </div>
+          <div style="background: #8a6d3b; color: white; padding: 1rem; border-radius: 12px;">
+            <div style="font-size:0.8rem;">Fees</div>
+            <div style="font-size:1.5rem; font-weight:700;">${document.getElementById('totalFees').innerHTML}</div>
           </div>
           <div style="background: #13294b; color: white; padding: 1rem; border-radius: 12px;">
-            <div style="font-size: 0.8rem; opacity: 0.8;">Total Received</div>
-            <div style="font-size: 1.5rem; font-weight: 700;">${document.getElementById('totalReceived').textContent}</div>
-          </div>
-          <div style="background: #13294b; color: white; padding: 1rem; border-radius: 12px;">
-            <div style="font-size: 0.8rem; opacity: 0.8;">Fees Paid</div>
-            <div style="font-size: 1.5rem; font-weight: 700;">${document.getElementById('totalFees').textContent}</div>
-          </div>
-          <div style="background: #13294b; color: white; padding: 1rem; border-radius: 12px;">
-            <div style="font-size: 0.8rem; opacity: 0.8;">Total Saved</div>
-            <div style="font-size: 1.5rem; font-weight: 700;">${document.getElementById('totalSavings').textContent}</div>
+            <div style="font-size:0.8rem;">Current</div>
+            <div style="font-size:1.5rem; font-weight:700;">${document.getElementById('currentBalance').innerHTML}</div>
           </div>
         `;
 
-        // Create PDF
+        // Build transactions table for PDF
+        let pdfRows = '';
+        allTransactions.slice(0, 20).forEach(tx => {
+          const isCredit = tx.type === 'credit';
+          const counterparty = isCredit ? tx.senderName : tx.recipientName;
+          const amountColor = isCredit ? 'color: #0f6e4a;' : 'color: #b22234;';
+          pdfRows += `
+            <tr>
+              <td style="padding: 0.5rem; border-bottom: 1px solid #eef2f6;">${tx.date.toLocaleDateString()}</td>
+              <td style="padding: 0.5rem; border-bottom: 1px solid #eef2f6;">${isCredit ? 'From' : 'To'} ${counterparty || 'Unknown'}</td>
+              <td style="padding: 0.5rem; border-bottom: 1px solid #eef2f6; text-align: right; ${amountColor}">${isCredit ? '+' : '-'} KES ${(tx.amount || 0).toLocaleString()}</td>
+              <td style="padding: 0.5rem; border-bottom: 1px solid #eef2f6; text-align: right;">KES ${(tx.fee || 0).toLocaleString()}</td>
+              <td style="padding: 0.5rem; border-bottom: 1px solid #eef2f6; text-align: right;">KES ${(tx.runningBalance || 0).toLocaleString()}</td>
+            </tr>
+          `;
+        });
+
+        pdfContent.querySelector('#pdfTransactionsBody').innerHTML = pdfRows;
+
+        // Generate PDF
         const canvas = await html2canvas(pdfContent, {
           scale: 2,
-          backgroundColor: '#ffffff'
+          backgroundColor: '#ffffff',
+          logging: false
         });
 
         const imgData = canvas.toDataURL('image/png');
@@ -827,30 +952,21 @@
         pdf.addImage(imgData, 'PNG', 0, 0, canvas.width / 2, canvas.height / 2);
         pdf.save(`TalesPay_Statement_${new Date().toISOString().split('T')[0]}.pdf`);
 
-        // Clean up
         document.body.removeChild(pdfContent);
         
       } catch (error) {
-        console.error('PDF generation error:', error);
-        alert('Error generating PDF. Please try again.');
+        console.error('PDF error:', error);
+        alert('Error generating PDF');
       } finally {
-        document.getElementById('loadingOverlay').classList.remove('active');
+        document.body.removeChild(loadingOverlay);
       }
     };
 
-    // Add loading overlay to body
-    const loadingOverlay = document.createElement('div');
-    loadingOverlay.className = 'loading-overlay';
-    loadingOverlay.id = 'loadingOverlay';
-    loadingOverlay.innerHTML = `
-      <div style="text-align: center;">
-        <div class="loading-spinner"></div>
-        <p style="margin-top: 1rem; color: #13294b; font-weight: 500;">Generating PDF...</p>
-      </div>
-    `;
-    document.body.appendChild(loadingOverlay);
+    // Add event listeners
+    document.getElementById('searchInput').addEventListener('input', filterTransactions);
+    document.getElementById('typeFilter').addEventListener('change', filterTransactions);
 
-    // Add loading spinner styles
+    // Add loading styles
     const style = document.createElement('style');
     style.textContent = `
       .loading-overlay {
@@ -861,24 +977,19 @@
         bottom: 0;
         background: rgba(255,255,255,0.9);
         display: flex;
+        flex-direction: column;
         align-items: center;
         justify-content: center;
         z-index: 9999;
-        opacity: 0;
-        visibility: hidden;
-        transition: all 0.3s;
-      }
-      .loading-overlay.active {
-        opacity: 1;
-        visibility: visible;
       }
       .loading-spinner {
-        width: 60px;
-        height: 60px;
+        width: 50px;
+        height: 50px;
         border: 4px solid #f0f3f9;
         border-top-color: #b22234;
         border-radius: 50%;
         animation: spin 1s linear infinite;
+        margin-bottom: 1rem;
       }
       @keyframes spin {
         to { transform: rotate(360deg); }
