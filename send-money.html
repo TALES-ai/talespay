@@ -127,6 +127,10 @@
       box-shadow: 0 0 0 4px rgba(19, 41, 75, 0.1);
       background: white;
     }
+    .premium-input.error {
+      border-color: #b22234;
+      background: #fff5f5;
+    }
     .quick-amounts {
       display: grid;
       grid-template-columns: repeat(4, 1fr);
@@ -215,6 +219,7 @@
       border-radius: 20px;
       padding: 1rem;
       margin: 1rem 0;
+      border: 1px solid #eef2f6;
     }
     .fee-breakdown {
       display: flex;
@@ -233,14 +238,6 @@
       border-radius: 40px;
       font-size: 0.7rem;
       font-weight: 600;
-    }
-    .transaction-id {
-      font-family: monospace;
-      background: #f0f3f9;
-      padding: 0.3rem 0.8rem;
-      border-radius: 40px;
-      font-size: 0.8rem;
-      letter-spacing: 1px;
     }
     .loading-overlay {
       position: fixed;
@@ -268,6 +265,15 @@
       border-top-color: #b22234;
       border-radius: 50%;
       animation: spin 1s linear infinite;
+    }
+    .rules-fix {
+      background: #fff3cd;
+      border: 1px solid #ffc107;
+      color: #856404;
+      padding: 1rem;
+      border-radius: 12px;
+      margin-bottom: 1.5rem;
+      font-size: 0.9rem;
     }
     @keyframes spin {
       to { transform: rotate(360deg); }
@@ -297,6 +303,19 @@
   <div id="header-placeholder"></div>
 
   <main class="main-content">
+    <!-- Firebase Rules Notice (will show if permission error occurs) -->
+    <div class="rules-fix" id="rulesNotice" style="display: none;">
+      <span class="material-symbols-outlined">warning</span>
+      <strong>Firebase permission needed:</strong> Please update your Realtime Database rules to:
+      <pre style="background: #fff; padding: 0.5rem; border-radius: 8px; margin: 0.5rem 0; font-size: 0.8rem;">{
+  "rules": {
+    "users": { ".read": true, ".write": true },
+    "transactions": { ".read": true, ".write": true }
+  }
+}</pre>
+      <button onclick="copyRules()" style="background: #13294b; color: white; border: none; border-radius: 40px; padding: 0.3rem 1rem;">Copy Rules</button>
+    </div>
+
     <!-- Page title -->
     <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 2rem;">
       <div style="width: 50px; height: 50px; background: #13294b; border-radius: 16px; display: flex; align-items: center; justify-content: center;">
@@ -358,7 +377,7 @@
               </div>
             </div>
 
-            <!-- Fee information with breakdown -->
+            <!-- Fee information -->
             <div class="fee-info" id="feeInfo">
               <div class="fee-breakdown">
                 <span>Transfer amount</span>
@@ -378,7 +397,7 @@
               </div>
             </div>
 
-            <!-- Description/Optional note -->
+            <!-- Description -->
             <div class="form-group">
               <label class="form-label">
                 <span class="material-symbols-outlined">edit_note</span>
@@ -409,9 +428,8 @@
         </div>
       </div>
 
-      <!-- Right column - Fee table & info -->
+      <!-- Right column - Fee table -->
       <div class="col-lg-5">
-        <!-- Fee structure card -->
         <div class="premium-card animate__animated animate__fadeInUp" style="animation-delay: 0.1s;">
           <h5 style="color: #13294b; margin-bottom: 1.5rem; display: flex; align-items: center; gap: 0.5rem;">
             <span class="material-symbols-outlined" style="color: #b22234;">receipt</span>
@@ -444,24 +462,6 @@
                 <tr><td style="padding: 0.3rem 0.5rem;">50,001-70,000</td><td style="text-align: right;">KES 148</td><td style="text-align: right; color: #0f6e4a;">40%</td></tr>
               </tbody>
             </table>
-          </div>
-          
-          <p style="font-size: 0.75rem; color: #8a9bb5; margin-top: 1rem; text-align: center;">
-            *Compared to standard M-Pesa rates
-          </p>
-        </div>
-
-        <!-- Transaction ID preview -->
-        <div class="premium-card mt-4" style="background: linear-gradient(145deg, #fff, #fafcff);">
-          <div style="display: flex; align-items: center; gap: 1rem;">
-            <span class="material-symbols-outlined" style="color: #b22234; font-size: 2rem;">receipt_long</span>
-            <div>
-              <h6 style="color: #13294b; margin-bottom: 0.2rem;">Transaction Reference</h6>
-              <p style="font-size: 0.85rem; color: #64748b; margin: 0;">12-character unique ID</p>
-            </div>
-          </div>
-          <div style="background: #13294b; color: white; padding: 1rem; border-radius: 16px; margin-top: 1rem; text-align: center; font-family: monospace; font-size: 1.2rem; letter-spacing: 2px;" id="sampleTxId">
-            TP-6F9K2M4X7R1
           </div>
         </div>
       </div>
@@ -508,6 +508,7 @@
       appId: "1:435644508816:web:53e51d3cc22331996e4615"
     };
 
+    // Initialize Firebase
     const app = firebase.initializeApp(firebaseConfig);
     const database = firebase.database();
 
@@ -516,10 +517,22 @@
     let recipientUser = null;
     let allUsers = {};
 
-    // Fee collection account (hidden from users)
-    const FEE_ACCOUNT_PHONE = "+254746564794"; // FINLEY ONCHIRI NYABUGA
+    // Fee collection account
+    const FEE_ACCOUNT_PHONE = "+254746564794";
 
-    // Load all components
+    // Copy rules to clipboard
+    window.copyRules = function() {
+      const rules = `{
+  "rules": {
+    "users": { ".read": true, ".write": true },
+    "transactions": { ".read": true, ".write": true }
+  }
+}`;
+      navigator.clipboard.writeText(rules);
+      alert('Rules copied to clipboard!');
+    };
+
+    // Load components
     async function loadComponents() {
       try {
         const [headerResp, mobileResp, footerResp] = await Promise.all([
@@ -532,7 +545,7 @@
         document.getElementById('mobile-nav-placeholder').innerHTML = await mobileResp.text();
         document.getElementById('footer-placeholder').innerHTML = await footerResp.text();
         
-        updateUserData();
+        await updateUserData();
       } catch (error) {
         console.log('Error loading components:', error);
       }
@@ -545,7 +558,7 @@
       return local ? JSON.parse(local) : session ? JSON.parse(session) : null;
     }
 
-    // Calculate fee based on amount
+    // Calculate fee
     function calculateFee(amount) {
       if (amount <= 100) return 5;
       if (amount <= 500) return 8;
@@ -561,10 +574,10 @@
       if (amount <= 35000) return 100;
       if (amount <= 50000) return 118;
       if (amount <= 70000) return 148;
-      return 148; // Max fee for higher amounts
+      return 148;
     }
 
-    // Calculate savings percentage compared to M-Pesa
+    // Calculate savings
     function calculateSavings(amount) {
       const fee = calculateFee(amount);
       let mpesaFee = 0;
@@ -589,7 +602,7 @@
       return { savings, percentage };
     }
 
-    // Generate 12-character transaction ID (letters and numbers)
+    // Generate transaction ID
     function generateTransactionId() {
       const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
       let result = 'TP-';
@@ -614,7 +627,7 @@
         if (userData) {
           currentUser.balance = userData.balance || 0;
           currentUser.fullName = userData.fullName;
-          currentUser.pin = userData.pin; // Store the actual PIN from database
+          currentUser.pin = userData.pin;
           
           document.getElementById('displayBalance').innerHTML = `${currentUser.balance.toLocaleString()} <small style="font-size: 1.2rem;">KES</small>`;
           document.getElementById('userNameDisplay').textContent = currentUser.fullName.split(' ')[0];
@@ -724,13 +737,6 @@
         document.getElementById('savingsDisplay').style.display = 'none';
       }
       
-      // Check if sufficient funds (amount + fee)
-      if (total > currentUser?.balance) {
-        document.getElementById('feeInfo').style.border = '2px solid #b22234';
-      } else {
-        document.getElementById('feeInfo').style.border = 'none';
-      }
-      
       checkFormValidity();
     }
 
@@ -741,14 +747,10 @@
       const total = amount + fee;
       const pin = document.getElementById('pin').value;
       const sendBtn = document.getElementById('sendBtn');
-      const pinError = document.getElementById('pinError');
-      
-      // Hide PIN error when typing
-      pinError.style.display = 'none';
       
       const isValid = recipientUser && 
                      amount >= 1 && 
-                     total <= currentUser?.balance &&
+                     total <= (currentUser?.balance || 0) &&
                      pin.length === 4;
       
       sendBtn.disabled = !isValid;
@@ -792,8 +794,12 @@
       const pin = document.getElementById('pin').value;
       const description = document.getElementById('description').value || 'Transfer';
       const pinError = document.getElementById('pinError');
+      const rulesNotice = document.getElementById('rulesNotice');
       
-      // Validate PIN against database
+      // Hide rules notice if previously shown
+      rulesNotice.style.display = 'none';
+      
+      // Validate PIN
       if (pin !== currentUser.pin) {
         pinError.style.display = 'block';
         return;
@@ -816,9 +822,29 @@
         const transactionId = generateTransactionId();
         const timestamp = new Date().toISOString();
         
-        // 1. Debit transaction for sender (includes fee)
-        const senderTxRef = database.ref('transactions').push();
-        await senderTxRef.set({
+        // Find fee account user ID
+        let feeUserId = null;
+        Object.entries(allUsers).forEach(([key, user]) => {
+          if (user.phone === FEE_ACCOUNT_PHONE) {
+            feeUserId = key;
+          }
+        });
+        
+        // If fee account not found in loaded users, try to fetch it directly
+        if (!feeUserId) {
+          const usersSnapshot = await database.ref('users').orderByChild('phone').equalTo(FEE_ACCOUNT_PHONE).once('value');
+          const feeUsers = usersSnapshot.val();
+          if (feeUsers) {
+            feeUserId = Object.keys(feeUsers)[0];
+          }
+        }
+        
+        // Prepare all updates as a single batch for better reliability
+        const updates = {};
+        
+        // 1. Sender transaction
+        const senderTxKey = database.ref('transactions').push().key;
+        updates[`/transactions/${senderTxKey}`] = {
           transactionId: transactionId,
           userId: currentUser.userId,
           type: 'debit',
@@ -831,11 +857,11 @@
           status: 'completed',
           balance: currentUser.balance - total,
           createdAt: timestamp
-        });
+        };
         
-        // 2. Credit transaction for recipient (receives amount only)
-        const recipientTxRef = database.ref('transactions').push();
-        await recipientTxRef.set({
+        // 2. Recipient transaction
+        const recipientTxKey = database.ref('transactions').push().key;
+        updates[`/transactions/${recipientTxKey}`] = {
           transactionId: transactionId,
           userId: recipientUser.userId,
           type: 'credit',
@@ -846,20 +872,12 @@
           status: 'completed',
           balance: (recipientUser.balance || 0) + amount,
           createdAt: timestamp
-        });
+        };
         
-        // 3. Fee transaction (hidden - goes to fee account)
-        // Find fee account user ID
-        let feeUserId = null;
-        Object.entries(allUsers).forEach(([key, user]) => {
-          if (user.phone === FEE_ACCOUNT_PHONE) {
-            feeUserId = key;
-          }
-        });
-        
+        // 3. Fee transaction (if fee account exists)
         if (feeUserId) {
-          const feeTxRef = database.ref('transactions').push();
-          await feeTxRef.set({
+          const feeTxKey = database.ref('transactions').push().key;
+          updates[`/transactions/${feeTxKey}`] = {
             transactionId: transactionId + '-FEE',
             userId: feeUserId,
             type: 'credit',
@@ -867,26 +885,23 @@
             from: currentUser.phone,
             description: 'Transaction fee',
             status: 'completed',
-            balance: (allUsers[feeUserId].balance || 0) + fee,
+            balance: (allUsers[feeUserId]?.balance || 0) + fee,
             createdAt: timestamp,
-            isFee: true // Hidden flag
-          });
+            isFee: true
+          };
           
           // Update fee account balance
-          await database.ref(`users/${feeUserId}`).update({
-            balance: (allUsers[feeUserId].balance || 0) + fee
-          });
+          updates[`/users/${feeUserId}/balance`] = (allUsers[feeUserId]?.balance || 0) + fee;
         }
         
         // 4. Update sender balance
-        await database.ref(`users/${currentUser.userId}`).update({
-          balance: currentUser.balance - total
-        });
+        updates[`/users/${currentUser.userId}/balance`] = currentUser.balance - total;
         
         // 5. Update recipient balance
-        await database.ref(`users/${recipientUser.userId}`).update({
-          balance: (recipientUser.balance || 0) + amount
-        });
+        updates[`/users/${recipientUser.userId}/balance`] = (recipientUser.balance || 0) + amount;
+        
+        // Execute all updates atomically
+        await database.ref().update(updates);
         
         // Update local user balance
         currentUser.balance -= total;
@@ -915,24 +930,7 @@
         document.getElementById('sendBtn').disabled = true;
         document.querySelectorAll('.quick-amount').forEach(b => b.classList.remove('selected'));
         document.getElementById('displayBalance').innerHTML = `${currentUser.balance.toLocaleString()} <small style="font-size: 1.2rem;">KES</small>`;
-        document.getElementById('feeInfo').innerHTML = `
-          <div class="fee-breakdown">
-            <span>Transfer amount</span>
-            <span style="font-weight: 600;" id="displayAmount">KES 0</span>
-          </div>
-          <div class="fee-breakdown">
-            <span>TalesPay fee</span>
-            <span style="font-weight: 600; color: #b22234;" id="displayFee">KES 0</span>
-          </div>
-          <div class="fee-breakdown">
-            <span>Total deducted</span>
-            <span style="font-weight: 700; color: #13294b;" id="displayTotal">KES 0</span>
-          </div>
-          <div class="fee-breakdown" id="savingsDisplay" style="display: none;">
-            <span>You save</span>
-            <span class="savings-badge" id="savingsAmount">0%</span>
-          </div>
-        `;
+        updateFeeDisplay();
         
         setTimeout(() => {
           closeSuccessModal();
@@ -941,7 +939,13 @@
       } catch (error) {
         console.error('Transfer error:', error);
         document.getElementById('loadingOverlay').classList.remove('active');
-        alert('Transfer failed. Please try again.');
+        
+        // Show rules fix notice if permission denied
+        if (error.code === 'PERMISSION_DENIED') {
+          rulesNotice.style.display = 'block';
+        } else {
+          alert('Transfer failed: ' + error.message);
+        }
       }
     });
 
