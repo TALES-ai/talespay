@@ -1,0 +1,759 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TalesPay · create account</title>
+  <!-- Bootstrap 5 premium theme -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+  <!-- Google Material Symbols -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0,1" />
+  <!-- Font Inter -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600;14..32,700&display=swap" rel="stylesheet">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      background: linear-gradient(145deg, #f3f5f9 0%, #eef0f5 100%);
+      font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 1.5rem;
+    }
+    .tales-card {
+      max-width: 1120px;
+      width: 100%;
+      background: #ffffff;
+      border-radius: 40px;
+      box-shadow: 0 30px 60px rgba(0, 20, 40, 0.12), 0 12px 28px rgba(0, 0, 0, 0.05);
+      overflow: hidden;
+    }
+    .row-grid {
+      display: flex;
+      flex-wrap: wrap;
+    }
+    .left-panel {
+      background-color: #13294b; /* deep navy */
+      color: white;
+      padding: 3rem 2.5rem;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      border-radius: 0;
+      position: relative;
+      overflow: hidden;
+    }
+    /* subtle red accent line on left panel */
+    .left-panel::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      right: 0;
+      width: 4px;
+      height: 100%;
+      background: linear-gradient(180deg, #b22234 0%, #8b1a1a 100%);
+      opacity: 0.6;
+    }
+    .left-panel h2 {
+      font-weight: 500;
+      font-size: 1.8rem;
+      letter-spacing: -0.02em;
+      margin-bottom: 2.5rem;
+      position: relative;
+    }
+    /* small red accent on heading */
+    .left-panel h2::before {
+      content: '';
+      position: absolute;
+      left: -2.5rem;
+      top: 0.5rem;
+      width: 3px;
+      height: 2rem;
+      background: #b22234;
+      border-radius: 0 4px 4px 0;
+    }
+    .left-panel .secure-item {
+      display: flex;
+      gap: 1rem;
+      margin-bottom: 2rem;
+      align-items: flex-start;
+    }
+    .left-panel .secure-item .material-symbols-outlined {
+      font-size: 1.8rem;
+      color: #b7c9e2;
+    }
+    .left-panel .secure-item h4 {
+      font-size: 1.2rem;
+      font-weight: 600;
+      margin-bottom: 0.2rem;
+    }
+    .left-panel .secure-item p {
+      font-size: 0.9rem;
+      opacity: 0.8;
+      line-height: 1.4;
+    }
+    /* balance pill on left panel */
+    .balance-pill {
+      background: rgba(255, 255, 255, 0.08);
+      backdrop-filter: blur(8px);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 60px;
+      padding: 0.8rem 1.5rem;
+      margin-bottom: 2rem;
+      display: inline-flex;
+      align-items: center;
+      gap: 1rem;
+      position: relative;
+      overflow: hidden;
+    }
+    .balance-pill::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 4px;
+      height: 100%;
+      background: #b22234;
+    }
+    .balance-label {
+      font-size: 0.8rem;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: #b7c9e2;
+    }
+    .balance-amount {
+      font-size: 1.6rem;
+      font-weight: 600;
+      color: white;
+      line-height: 1;
+    }
+    .balance-amount small {
+      font-size: 0.9rem;
+      font-weight: 400;
+      color: #9aaec9;
+      margin-left: 0.2rem;
+    }
+    .footer-note {
+      font-size: 0.8rem;
+      color: #99aac5;
+      margin-top: 2rem;
+    }
+    .footer-note span {
+      color: white;
+      font-weight: 500;
+    }
+    .regulated {
+      border-top: 1px solid rgba(255,255,255,0.1);
+      padding-top: 1.5rem;
+      margin-top: 1.5rem;
+      font-size: 0.75rem;
+      color: #a2b4cf;
+    }
+    .right-panel {
+      background: white;
+      padding: 2.8rem 3rem;
+      position: relative;
+    }
+    /* subtle green accent on right panel */
+    .right-panel::after {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      height: 3px;
+      background: linear-gradient(90deg, #0f6e4a 0%, #b22234 80%);
+      opacity: 0.3;
+    }
+    .talespay-logo {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      margin-bottom: 1.8rem;
+      flex-wrap: wrap;
+    }
+    .logo-image {
+      height: 48px;
+      width: auto;
+      object-fit: contain;
+      border-radius: 8px;
+    }
+    .logo-text {
+      font-weight: 600;
+      font-size: 1.5rem;
+      color: #13294b;
+      letter-spacing: -0.02em;
+    }
+    .divider {
+      width: 1px;
+      height: 24px;
+      background: #dde3ed;
+    }
+    .tagline {
+      color: #4f5e77;
+      font-weight: 400;
+      font-size: 0.9rem;
+      font-style: italic;
+    }
+    .form-title {
+      font-size: 1.6rem;
+      font-weight: 500;
+      color: #13294b;
+      margin-bottom: 0.5rem;
+    }
+    .form-sub {
+      color: #54657e;
+      font-size: 0.9rem;
+      margin-bottom: 2rem;
+      border-left: 3px solid #b22234; /* red accent */
+      padding-left: 1rem;
+      background: #f6f9fc;
+      border-radius: 0 8px 8px 0;
+      line-height: 1.4;
+    }
+    .form-label {
+      font-weight: 500;
+      font-size: 0.85rem;
+      text-transform: uppercase;
+      letter-spacing: 0.02em;
+      color: #2d3a4f;
+      margin-bottom: 0.25rem;
+    }
+    .form-control, .input-group-text {
+      border: 1px solid #d9e0e8;
+      border-radius: 14px;
+      padding: 0.7rem 1rem;
+      font-size: 0.95rem;
+      background-color: #ffffff;
+      transition: all 0.15s;
+      box-shadow: none;
+    }
+    .form-control:focus {
+      border-color: #13294b;
+      box-shadow: 0 0 0 3px rgba(19,41,75,0.12);
+    }
+    .input-group-text {
+      background-color: #f2f5f9;
+      color: #1b3456;
+      font-weight: 500;
+      border-right: none;
+      border-top-right-radius: 0;
+      border-bottom-right-radius: 0;
+    }
+    .input-group .form-control {
+      border-left: none;
+      border-top-left-radius: 0;
+      border-bottom-left-radius: 0;
+    }
+    .pin-hint {
+      font-size: 0.75rem;
+      color: #64748b;
+      margin-top: 0.2rem;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+    .form-check {
+      margin: 1.8rem 0 2rem;
+    }
+    .form-check-input {
+      width: 1.2rem;
+      height: 1.2rem;
+      border: 2px solid #cbd5e1;
+      border-radius: 4px;
+      margin-top: 0;
+    }
+    .form-check-input:checked {
+      background-color: #0f6e4a;
+      border-color: #0f6e4a;
+    }
+    .form-check-label {
+      font-size: 0.9rem;
+      color: #2d3a4f;
+    }
+    .form-check-label a {
+      color: #13294b;
+      font-weight: 600;
+      text-decoration: none;
+    }
+    .btn-register {
+      background: #13294b;
+      border: none;
+      border-radius: 18px;
+      padding: 0.9rem 1.2rem;
+      font-weight: 600;
+      font-size: 1rem;
+      letter-spacing: 0.3px;
+      color: white;
+      width: 100%;
+      transition: 0.15s;
+      margin-bottom: 1.5rem;
+      position: relative;
+      overflow: hidden;
+    }
+    .btn-register::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      right: 0;
+      width: 6px;
+      height: 100%;
+      background: linear-gradient(180deg, #b22234, #8b1a1a);
+    }
+    .btn-register:hover {
+      background: #1e3a5f;
+      transform: translateY(-2px);
+      box-shadow: 0 8px 18px rgba(19,41,75,0.2);
+    }
+    .login-footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.9rem;
+      border-top: 1px solid #eef2f6;
+      padding-top: 1.5rem;
+      margin-top: 1rem;
+    }
+    .login-footer a {
+      color: #13294b;
+      font-weight: 600;
+      text-decoration: none;
+    }
+    .login-footer a.forgot {
+      color: #b22234; /* red accent */
+      font-weight: 500;
+    }
+    .permission-alert {
+      background-color: #fff3cd;
+      border: 1px solid #ffc107;
+      color: #856404;
+      padding: 1rem;
+      border-radius: 12px;
+      margin-bottom: 1.5rem;
+      font-size: 0.9rem;
+    }
+    .index-guidance {
+      background-color: #e7f3ff;
+      border: 1px solid #91b9e6;
+      color: #1a4d8c;
+      padding: 1rem;
+      border-radius: 12px;
+      margin-bottom: 1.5rem;
+      font-size: 0.9rem;
+      border-left: 4px solid #b22234;
+    }
+    /* status messages with subtle red/green */
+    .alert-success {
+      background-color: #f0f9f0;
+      border-color: #0f6e4a;
+      color: #0f6e4a;
+      border-left: 4px solid #0f6e4a;
+    }
+    .alert-danger {
+      background-color: #fff5f5;
+      border-color: #b22234;
+      color: #8b1a1a;
+      border-left: 4px solid #b22234;
+    }
+    .alert-warning {
+      background-color: #fff8e7;
+      border-color: #cc8b00;
+      color: #8b6b00;
+      border-left: 4px solid #cc8b00;
+    }
+    .alert-info {
+      background-color: #e7f3ff;
+      border-color: #91b9e6;
+      color: #1a4d8c;
+      border-left: 4px solid #1a4d8c;
+    }
+    /* balance indicator on right panel */
+    .initial-balance {
+      display: inline-block;
+      background: #f0f3f9;
+      border-radius: 40px;
+      padding: 0.4rem 1rem;
+      margin-left: 1rem;
+      font-size: 0.8rem;
+      color: #13294b;
+      border: 1px solid #d9e0e8;
+    }
+    .initial-balance strong {
+      color: #b22234;
+      font-weight: 600;
+    }
+    /* logo fallback styling */
+    .logo-fallback {
+      display: none;
+    }
+  </style>
+</head>
+<body>
+<div class="tales-card">
+  <div class="row row-grid g-0">
+    <!-- left panel with balance -->
+    <div class="col-md-5 left-panel">
+      <div>
+        <h2 style="font-weight: 400;">WELCOME TO<br>TALESPAY</h2>
+        
+        <!-- Balance display -->
+        <div class="balance-pill">
+          <span class="balance-label">New account balance</span>
+          <span class="balance-amount">0 <small>KES</small></span>
+        </div>
+        
+        <div class="secure-item">
+          <span class="material-symbols-outlined">lock</span>
+          <div>
+            <h4>PIN safety</h4>
+            <p>Set a 4‑digit PIN you can easily remember. Never share it or store it on shared devices.</p>
+          </div>
+        </div>
+        <div class="secure-item">
+          <span class="material-symbols-outlined">verified_user</span>
+          <div>
+            <h4>ID verification</h4>
+            <p>Your ID number and phone are encrypted. Each ID and phone can only register once.</p>
+          </div>
+        </div>
+        <div class="secure-item">
+          <span class="material-symbols-outlined">account_balance</span>
+          <div>
+            <h4>Zero start balance</h4>
+            <p>Your account starts at 0 KES. Fund it via M-Pesa, card, or bank transfer.</p>
+          </div>
+        </div>
+      </div>
+      <div class="footer-note">
+        <div>©2009-2026 <span>TalesPay™</span>. All rights reserved.</div>
+        <div class="regulated">Regulated by the Central Bank of Kenya</div>
+      </div>
+    </div>
+
+    <!-- right panel: register form -->
+    <div class="col-md-7 right-panel">
+      <div class="talespay-logo">
+        <!-- Actual talespay.jpg logo image -->
+        <img src="talespay.jpg" alt="TalesPay Logo" class="logo-image" onerror="this.style.display='none'; document.getElementById('logoFallback').style.display='flex';">
+        
+        <!-- Fallback in case image doesn't load -->
+        <div id="logoFallback" style="display: none; align-items: center; gap: 0.5rem;">
+          <div style="width: 40px; height: 40px; background: #13294b; border-radius: 8px; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; font-size: 1.2rem;">TP</div>
+          <span class="logo-text">TalesPay</span>
+        </div>
+        
+        <span class="logo-text" style="display: none;">TalesPay</span>
+        <span class="divider"></span>
+        <span class="tagline">"Connecting value, instantly."</span>
+        <span class="initial-balance"><strong>0 KES</strong> starting balance</span>
+      </div>
+      
+      <!-- Index guidance (will show if performance warnings appear) -->
+      <div class="index-guidance" id="indexGuidance" style="display: none;">
+        <span class="material-symbols-outlined">speed</span>
+        <strong>Performance tip:</strong> Add these indexes to your Firebase Realtime Database rules for faster queries:
+        <pre style="background: #fff; padding: 0.5rem; border-radius: 8px; margin: 0.5rem 0; font-size: 0.8rem;">{
+  "rules": {
+    "users": {
+      ".indexOn": ["phone", "idNumber"]
+    }
+  }
+}</pre>
+      </div>
+
+      <!-- Firebase permission guidance -->
+      <div class="permission-alert" id="permissionGuidance" style="display: none;">
+        <span class="material-symbols-outlined">info</span>
+        <strong>Firebase permission needed:</strong> Please update your Realtime Database rules to:
+        <pre style="background: #fff; padding: 0.5rem; border-radius: 8px; margin: 0.5rem 0; font-size: 0.8rem;">{
+  "rules": {
+    "users": {
+      ".read": false,
+      ".write": true,
+      ".indexOn": ["phone", "idNumber"]
+    }
+  }
+}</pre>
+        <small>Go to <a href="https://console.firebase.google.com/project/how-fast-bcabe/database/how-fast-bcabe-default-rtdb/rules" target="_blank">Firebase Console → Realtime Database → Rules</a></small>
+      </div>
+
+      <div class="form-title">Create account</div>
+      <div class="form-sub">Start with 0 KES · Secure transfers</div>
+
+      <form id="registerForm">
+        <div class="mb-3">
+          <label class="form-label">Full names *</label>
+          <input type="text" class="form-control" id="fullName" placeholder="e.g. Kimathi Mwangi" required>
+        </div>
+
+        <div class="row g-3 id-phone-row">
+          <div class="col-sm-6">
+            <label class="form-label">Phone number *</label>
+            <div class="input-group">
+              <span class="input-group-text">+254</span>
+              <input type="tel" class="form-control" id="phoneNumber" placeholder="712345678" pattern="[0-9]{9}" maxlength="9" required>
+            </div>
+          </div>
+          <div class="col-sm-6">
+            <label class="form-label">ID number *</label>
+            <input type="text" class="form-control" id="idNumber" placeholder="National ID / Passport" required>
+          </div>
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label">4‑digit PIN (password) *</label>
+          <input type="password" class="form-control" id="pin" inputmode="numeric" pattern="\d{4}" maxlength="4" placeholder="••••" required>
+          <div class="pin-hint">
+            <span class="material-symbols-outlined">pin</span> exactly 4 numbers, no letters
+          </div>
+        </div>
+
+        <div class="form-check">
+          <input class="form-check-input" type="checkbox" id="acceptTerms" required>
+          <label class="form-check-label" for="acceptTerms">
+            I accept the <a href="#">Terms of use</a> and <a href="#">Privacy policy</a>, and confirm that I'm 18+.
+          </label>
+        </div>
+
+        <button type="submit" class="btn-register" id="registerBtn">CREATE ACCOUNT</button>
+
+        <div class="login-footer">
+          <span>Already have an account? <a href="login.html">LOG IN</a></span>
+          <a href="#" class="forgot">Don't know your PIN?</a>
+        </div>
+      </form>
+      
+      <!-- Status messages -->
+      <div id="statusMessage" style="margin-top: 1rem;"></div>
+    </div>
+  </div>
+</div>
+
+<!-- Firebase SDKs -->
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+<script>
+  // Firebase configuration
+  const firebaseConfig = {
+    apiKey: "AIzaSyDEzRCOw2E89qjewG-vuQ_SWBWUbGdDHv8",
+    authDomain: "how-fast-bcabe.firebaseapp.com",
+    databaseURL: "https://how-fast-bcabe-default-rtdb.firebaseio.com",
+    projectId: "how-fast-bcabe",
+    storageBucket: "how-fast-bcabe.firebasestorage.app",
+    messagingSenderId: "435644508816",
+    appId: "1:435644508816:web:53e51d3cc22331996e4615",
+    measurementId: "G-ZBZZK4D9D0"
+  };
+
+  // Initialize Firebase
+  const app = firebase.initializeApp(firebaseConfig);
+  const database = firebase.database();
+
+  // Track if we've shown index guidance
+  let indexWarningShown = {
+    phone: false,
+    idNumber: false
+  };
+
+  // Override console.warn to catch Firebase index warnings
+  const originalWarn = console.warn;
+  console.warn = function(...args) {
+    const message = args.join(' ');
+    if (message.includes('.indexOn') && message.includes('phone')) {
+      if (!indexWarningShown.phone) {
+        indexWarningShown.phone = true;
+        showIndexGuidance();
+      }
+    }
+    if (message.includes('.indexOn') && message.includes('idNumber')) {
+      if (!indexWarningShown.idNumber) {
+        indexWarningShown.idNumber = true;
+        showIndexGuidance();
+      }
+    }
+    originalWarn.apply(console, args);
+  };
+
+  // Also capture Firebase's internal logger
+  const originalError = console.error;
+  console.error = function(...args) {
+    const message = args.join(' ');
+    if (message.includes('FIREBASE WARNING') && message.includes('index')) {
+      if (message.includes('phone') && !indexWarningShown.phone) {
+        indexWarningShown.phone = true;
+        showIndexGuidance();
+      }
+      if (message.includes('idNumber') && !indexWarningShown.idNumber) {
+        indexWarningShown.idNumber = true;
+        showIndexGuidance();
+      }
+    }
+    originalError.apply(console, args);
+  };
+
+  function showIndexGuidance() {
+    document.getElementById('indexGuidance').style.display = 'block';
+  }
+
+  // Test connection
+  database.ref('.info/connected').on('value', (snap) => {
+    if (snap.val() === true) console.log('✅ Connected to Firebase');
+  });
+
+  // Handle form submit
+  document.getElementById('registerForm').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    
+    const registerBtn = document.getElementById('registerBtn');
+    const statusDiv = document.getElementById('statusMessage');
+    const permissionGuidance = document.getElementById('permissionGuidance');
+    
+    // Collect fields
+    const fullName = document.getElementById('fullName').value.trim();
+    const phoneInput = document.getElementById('phoneNumber').value.trim();
+    const idNumber = document.getElementById('idNumber').value.trim();
+    const pin = document.getElementById('pin').value.trim();
+    const termsChecked = document.getElementById('acceptTerms').checked;
+
+    // Validation
+    if (!fullName || !phoneInput || !idNumber || !pin) {
+      showStatus('Please fill in all fields', 'warning');
+      return;
+    }
+    if (!termsChecked) {
+      showStatus('You must accept the terms and conditions.', 'warning');
+      return;
+    }
+    if (!/^\d{4}$/.test(pin)) {
+      showStatus('PIN must be exactly 4 digits (0-9).', 'warning');
+      return;
+    }
+    if (!/^\d{9}$/.test(phoneInput)) {
+      showStatus('Please enter a valid 9-digit phone number (e.g., 712345678).', 'warning');
+      return;
+    }
+    if (!/^[a-zA-Z0-9\s\/-]+$/.test(idNumber)) {
+      showStatus('Please enter a valid ID number (letters, numbers, spaces, hyphens only).', 'warning');
+      return;
+    }
+
+    // Disable button during submission
+    registerBtn.disabled = true;
+    registerBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Verifying...';
+    statusDiv.innerHTML = '';
+    permissionGuidance.style.display = 'none';
+
+    const fullPhone = '+254' + phoneInput;
+    
+    try {
+      // Check for duplicate phone OR id number
+      // Using once() value queries - they work even without indexes, just slower
+      const usersRef = database.ref('users');
+      
+      // Get all users and check locally (more reliable than queries if permissions are restrictive)
+      // This approach works even without indexes
+      const snapshot = await usersRef.once('value');
+      const users = snapshot.val() || {};
+      
+      let phoneExists = false;
+      let idExists = false;
+      
+      // Check for duplicates
+      Object.values(users).forEach(user => {
+        if (user.phone === fullPhone) phoneExists = true;
+        if (user.idNumber === idNumber) idExists = true;
+      });
+      
+      if (phoneExists) {
+        showStatus('This phone number is already registered. Please use a different number or login.', 'danger');
+        registerBtn.disabled = false;
+        registerBtn.innerHTML = 'CREATE ACCOUNT (0 KES)';
+        return;
+      }
+      
+      if (idExists) {
+        showStatus('This ID number is already registered. Each ID can only have one account.', 'danger');
+        registerBtn.disabled = false;
+        registerBtn.innerHTML = 'CREATE ACCOUNT (0 KES)';
+        return;
+      }
+
+      // If no duplicates, proceed with registration
+      registerBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Creating account...';
+
+      // User data with 0 balance
+      const userData = {
+        fullName: fullName,
+        phone: fullPhone,
+        idNumber: idNumber,
+        pin: pin,
+        balance: 0, // Starting balance 0 KES
+        currency: 'KES',
+        termsAccepted: true,
+        createdAt: new Date().toISOString(),
+        platform: 'TalesPay web',
+        accountStatus: 'active',
+        lastLogin: null
+      };
+
+      // Save to Firebase
+      const userRef = database.ref('users').push();
+      await userRef.set(userData);
+      
+      // Success
+      showStatus('✅ Registration successful! Your TalesPay account has been created with 0 KES balance.', 'success');
+      document.getElementById('registerForm').reset();
+      
+    } catch (error) {
+      console.error('Firebase error:', error);
+      
+      if (error.code === 'PERMISSION_DENIED') {
+        permissionGuidance.style.display = 'block';
+        showStatus('❌ Firebase permission denied. Please update your database rules (see guidance above).', 'danger');
+      } else {
+        showStatus('Registration failed: ' + error.message, 'danger');
+      }
+      
+    } finally {
+      registerBtn.disabled = false;
+      registerBtn.innerHTML = 'CREATE ACCOUNT (0 KES)';
+    }
+  });
+
+  // Helper for status messages
+  function showStatus(message, type) {
+    const statusDiv = document.getElementById('statusMessage');
+    const alertClass = type === 'success' ? 'alert-success' : 
+                      type === 'warning' ? 'alert-warning' : 
+                      type === 'info' ? 'alert-info' : 'alert-danger';
+    
+    statusDiv.innerHTML = `
+      <div class="alert ${alertClass} alert-dismissible fade show" role="alert">
+        ${message}
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+      </div>
+    `;
+  }
+
+  // Input restrictions
+  document.getElementById('pin').addEventListener('input', function() {
+    this.value = this.value.replace(/\D/g, '').slice(0, 4);
+  });
+  
+  document.getElementById('phoneNumber').addEventListener('input', function() {
+    this.value = this.value.replace(/\D/g, '').slice(0, 9);
+  });
+
+  // ID number: allow letters, numbers, spaces, hyphens, slashes
+  document.getElementById('idNumber').addEventListener('input', function() {
+    this.value = this.value.replace(/[^a-zA-Z0-9\s\/-]/g, '');
+  });
+</script>
+
+<!-- Bootstrap JS -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

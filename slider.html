@@ -1,0 +1,64 @@
+<div class="slider-container" style="position: relative; width: 100%; border-radius: 24px; overflow: hidden; box-shadow: 0 8px 24px rgba(0,0,0,0.1);">
+  <div class="slides" style="position: relative; height: 200px;">
+    <!-- Slide 1 - Send Money -->
+    <div class="slide" style="position: absolute; width: 100%; height: 100%; opacity: 0; transition: opacity 0.5s ease-in-out; background: linear-gradient(135deg, #13294b 0%, #1e3a5f 100%);">
+      <div style="display: flex; align-items: center; justify-content: space-between; padding: 2rem; height: 100%; color: white;">
+        <div>
+          <h3 style="font-size: 1.5rem; margin-bottom: 0.5rem;">Send Money Instantly</h3>
+          <p style="opacity: 0.9;">Zero fees to other TalesPay users</p>
+          <a href="send-money.html" style="display: inline-block; background: #b22234; color: white; padding: 0.5rem 2rem; border-radius: 40px; text-decoration: none; margin-top: 1rem;">Send Now</a>
+        </div>
+        <span class="material-symbols-outlined" style="font-size: 5rem; opacity: 0.2;">send_money</span>
+      </div>
+    </div>
+    
+    <!-- Slide 2 - Deposit -->
+    <div class="slide" style="position: absolute; width: 100%; height: 100%; opacity: 0; transition: opacity 0.5s ease-in-out; background: linear-gradient(135deg, #0f6e4a 0%, #1a8c5e 100%);">
+      <div style="display: flex; align-items: center; justify-content: space-between; padding: 2rem; height: 100%; color: white;">
+        <div>
+          <h3 style="font-size: 1.5rem; margin-bottom: 0.5rem;">Deposit via M-Pesa</h3>
+          <p style="opacity: 0.9;">Instant deposits from any mobile money</p>
+          <a href="deposit.html" style="display: inline-block; background: #b22234; color: white; padding: 0.5rem 2rem; border-radius: 40px; text-decoration: none; margin-top: 1rem;">Deposit</a>
+        </div>
+        <span class="material-symbols-outlined" style="font-size: 5rem; opacity: 0.2;">account_balance</span>
+      </div>
+    </div>
+    
+    <!-- Slide 3 - Pay Bills -->
+    <div class="slide" style="position: absolute; width: 100%; height: 100%; opacity: 0; transition: opacity 0.5s ease-in-out; background: linear-gradient(135deg, #8b1a1a 0%, #b22234 100%);">
+      <div style="display: flex; align-items: center; justify-content: space-between; padding: 2rem; height: 100%; color: white;">
+        <div>
+          <h3 style="font-size: 1.5rem; margin-bottom: 0.5rem;">Pay Bills Easily</h3>
+          <p style="opacity: 0.9;">Electricity, water, TV, and more</p>
+          <a href="pay-bills.html" style="display: inline-block; background: #13294b; color: white; padding: 0.5rem 2rem; border-radius: 40px; text-decoration: none; margin-top: 1rem;">Pay Now</a>
+        </div>
+        <span class="material-symbols-outlined" style="font-size: 5rem; opacity: 0.2;">receipt</span>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Slider indicators -->
+  <div style="position: absolute; bottom: 1rem; left: 50%; transform: translateX(-50%); display: flex; gap: 0.5rem;">
+    <div class="indicator" style="width: 30px; height: 4px; background: white; border-radius: 4px; opacity: 0.5;"></div>
+    <div class="indicator" style="width: 30px; height: 4px; background: white; border-radius: 4px; opacity: 0.5;"></div>
+    <div class="indicator" style="width: 30px; height: 4px; background: white; border-radius: 4px; opacity: 0.5;"></div>
+  </div>
+</div>
+
+<style>
+  .slide.active { opacity: 1; }
+  .indicator.active { opacity: 1; }
+</style>
+
+<script>
+  // Update indicators when slide changes
+  function updateIndicators(index) {
+    document.querySelectorAll('.indicator').forEach((ind, i) => {
+      ind.style.opacity = i === index ? '1' : '0.5';
+    });
+  }
+  
+  // Override the global slider update
+  const originalUpdate = window.updateIndicators || function(){};
+  window.updateIndicators = updateIndicators;
+</script>

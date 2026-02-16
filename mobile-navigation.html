@@ -1,0 +1,31 @@
+<nav style="display: none; position: fixed; bottom: 0; left: 0; right: 0; background: white; border-top: 1px solid #eef2f6; padding: 0.5rem; z-index: 99;" class="mobile-nav">
+  <div style="display: grid; grid-template-columns: repeat(5, 1fr); gap: 0.25rem;">
+    <a href="index.html" style="display: flex; flex-direction: column; align-items: center; text-decoration: none; color: #13294b; padding: 0.5rem;">
+      <span class="material-symbols-outlined">home</span>
+      <span style="font-size: 0.7rem;">Home</span>
+    </a>
+    <a href="send-money.html" style="display: flex; flex-direction: column; align-items: center; text-decoration: none; color: #4f5e77; padding: 0.5rem;">
+      <span class="material-symbols-outlined">send</span>
+      <span style="font-size: 0.7rem;">Send</span>
+    </a>
+    <a href="deposit.html" style="display: flex; flex-direction: column; align-items: center; text-decoration: none; color: #4f5e77; padding: 0.5rem;">
+      <span class="material-symbols-outlined">add_card</span>
+      <span style="font-size: 0.7rem;">Deposit</span>
+    </a>
+    <a href="transactions.html" style="display: flex; flex-direction: column; align-items: center; text-decoration: none; color: #4f5e77; padding: 0.5rem;">
+      <span class="material-symbols-outlined">history</span>
+      <span style="font-size: 0.7rem;">History</span>
+    </a>
+    <a href="profile.html" style="display: flex; flex-direction: column; align-items: center; text-decoration: none; color: #4f5e77; padding: 0.5rem;">
+      <span class="material-symbols-outlined">person</span>
+      <span style="font-size: 0.7rem;">Profile</span>
+    </a>
+  </div>
+</nav>
+
+<style>
+  @media (max-width: 768px) {
+    .mobile-nav { display: block !important; }
+    body { padding-bottom: 70px; }
+  }
+</style>

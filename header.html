@@ -1,0 +1,44 @@
+<header style="background: white; border-bottom: 1px solid #eef2f6; padding: 1rem 2rem; position: sticky; top: 0; z-index: 100;">
+  <div style="display: flex; align-items: center; justify-content: space-between; max-width: 1400px; margin: 0 auto;">
+    <div style="display: flex; align-items: center; gap: 2rem;">
+      <a href="index.html" style="display: flex; align-items: center; gap: 0.5rem; text-decoration: none;">
+        <img src="talespay.jpg" alt="TalesPay" style="height: 40px; width: auto; border-radius: 8px;" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+        <div style="display: none; align-items: center; gap: 0.5rem;">
+          <div style="width: 40px; height: 40px; background: #13294b; border-radius: 8px; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold;">TP</div>
+          <span style="font-weight: 600; color: #13294b;">TalesPay</span>
+        </div>
+      </a>
+      <nav style="display: flex; gap: 1.5rem;">
+        <a href="index.html" style="color: #13294b; text-decoration: none; font-weight: 500;">Dashboard</a>
+        <a href="send-money.html" style="color: #4f5e77; text-decoration: none;">Send</a>
+        <a href="transactions.html" style="color: #4f5e77; text-decoration: none;">Transactions</a>
+        <a href="profile.html" style="color: #4f5e77; text-decoration: none;">Profile</a>
+      </nav>
+    </div>
+    <div style="display: flex; align-items: center; gap: 1.5rem;">
+      <span style="background: #f0f3f9; padding: 0.4rem 1rem; border-radius: 40px; font-size: 0.9rem; border-left: 3px solid #b22234;">
+        <span id="headerBalance">0 KES</span>
+      </span>
+      <button onclick="logout()" style="background: none; border: 1px solid #e0e7ef; border-radius: 40px; padding: 0.4rem 1rem; color: #b22234;">
+        <span class="material-symbols-outlined" style="font-size: 1.2rem;">logout</span>
+      </button>
+    </div>
+  </div>
+</header>
+
+<script>
+  function logout() {
+    localStorage.removeItem('talespay_user');
+    sessionStorage.removeItem('talespay_user');
+    window.location.href = 'login.html';
+  }
+  
+  // Update header balance
+  function updateHeaderBalance() {
+    const user = JSON.parse(localStorage.getItem('talespay_user') || sessionStorage.getItem('talespay_user') || 'null');
+    if (user && user.balance !== undefined) {
+      document.getElementById('headerBalance').textContent = `${user.balance.toLocaleString()} KES`;
+    }
+  }
+  updateHeaderBalance();
+</script>

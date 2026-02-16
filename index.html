@@ -1,0 +1,475 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TalesPay · Dashboard</title>
+  <!-- Bootstrap 5 -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+  <!-- Material Symbols -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0,1" />
+  <!-- Font Inter -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600;14..32,700&display=swap" rel="stylesheet">
+  <!-- Chart.js for financial graphs -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      background: #f3f5f9;
+      font-family: 'Inter', sans-serif;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+    .main-content {
+      flex: 1;
+      padding: 2rem 1.5rem 5rem;
+      max-width: 1400px;
+      margin: 0 auto;
+      width: 100%;
+    }
+    /* Financial cards */
+    .financial-card {
+      background: white;
+      border-radius: 24px;
+      padding: 1.5rem;
+      box-shadow: 0 8px 24px rgba(0, 20, 40, 0.06);
+      transition: transform 0.2s;
+      height: 100%;
+      border: 1px solid rgba(19, 41, 75, 0.05);
+    }
+    .financial-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 12px 28px rgba(19, 41, 75, 0.12);
+    }
+    .balance-card {
+      background: linear-gradient(145deg, #13294b, #1e3a5f);
+      color: white;
+      position: relative;
+      overflow: hidden;
+    }
+    .balance-card::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      right: 0;
+      width: 6px;
+      height: 100%;
+      background: linear-gradient(180deg, #b22234, #8b1a1a);
+    }
+    .balance-amount {
+      font-size: 2.5rem;
+      font-weight: 700;
+      margin: 1rem 0;
+    }
+    .balance-amount small {
+      font-size: 1rem;
+      font-weight: 400;
+      opacity: 0.8;
+    }
+    .action-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+      gap: 1rem;
+      margin: 1.5rem 0;
+    }
+    .action-item {
+      text-align: center;
+      padding: 0.8rem;
+      background: #f8fafd;
+      border-radius: 16px;
+      transition: all 0.2s;
+      cursor: pointer;
+      border: 1px solid transparent;
+    }
+    .action-item:hover {
+      background: white;
+      border-color: #b22234;
+      box-shadow: 0 4px 12px rgba(178, 34, 52, 0.1);
+    }
+    .action-item .material-symbols-outlined {
+      font-size: 2rem;
+      color: #13294b;
+    }
+    .action-item span:last-child {
+      display: block;
+      font-size: 0.8rem;
+      font-weight: 500;
+      margin-top: 0.3rem;
+      color: #2d3a4f;
+    }
+    .transaction-item {
+      display: flex;
+      align-items: center;
+      padding: 1rem;
+      border-bottom: 1px solid #eef2f6;
+      gap: 1rem;
+    }
+    .transaction-item:last-child {
+      border-bottom: none;
+    }
+    .tx-icon {
+      width: 40px;
+      height: 40px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #f0f3f9;
+    }
+    .tx-details {
+      flex: 1;
+    }
+    .tx-details .title {
+      font-weight: 600;
+      color: #13294b;
+    }
+    .tx-details .date {
+      font-size: 0.75rem;
+      color: #64748b;
+    }
+    .tx-amount {
+      font-weight: 600;
+    }
+    .tx-amount.positive { color: #0f6e4a; }
+    .tx-amount.negative { color: #b22234; }
+    /* loading states */
+    .skeleton {
+      background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+      background-size: 200% 100%;
+      animation: loading 1.5s infinite;
+      border-radius: 8px;
+    }
+    @keyframes loading {
+      0% { background-position: 200% 0; }
+      100% { background-position: -200% 0; }
+    }
+  </style>
+</head>
+<body>
+  <!-- Header loaded dynamically -->
+  <div id="header-placeholder"></div>
+
+  <main class="main-content">
+    <!-- Quick stats row -->
+    <div class="row g-4 mb-4">
+      <div class="col-lg-4 col-md-6">
+        <div class="financial-card balance-card" id="balanceCard">
+          <div style="opacity: 0.8; font-size: 0.9rem;">Total Balance</div>
+          <div class="balance-amount" id="displayBalance">0 <small>KES</small></div>
+          <div style="display: flex; gap: 1rem; margin-top: 0.5rem;">
+            <span><span class="material-symbols-outlined" style="font-size: 1rem;">account_circle</span> <span id="userName">Loading...</span></span>
+            <span><span class="material-symbols-outlined" style="font-size: 1rem;">phone_android</span> <span id="userPhone"></span></span>
+          </div>
+        </div>
+      </div>
+      <div class="col-lg-8 col-md-6">
+        <div class="financial-card" style="padding: 0.5rem;">
+          <canvas id="balanceChart" style="height: 120px; width: 100%;"></canvas>
+        </div>
+      </div>
+    </div>
+
+    <!-- Quick actions -->
+    <div class="financial-card mb-4">
+      <h5 style="color: #13294b; margin-bottom: 1rem;">Quick Actions</h5>
+      <div class="action-grid">
+        <div class="action-item" onclick="window.location.href='send-money.html'">
+          <span class="material-symbols-outlined">send_money</span>
+          <span>Send</span>
+        </div>
+        <div class="action-item" onclick="window.location.href='deposit.html'">
+          <span class="material-symbols-outlined">account_balance_wallet</span>
+          <span>Deposit</span>
+        </div>
+        <div class="action-item" onclick="window.location.href='withdraw.html'">
+          <span class="material-symbols-outlined">currency_exchange</span>
+          <span>Withdraw</span>
+        </div>
+        <div class="action-item" onclick="window.location.href='profile.html'">
+          <span class="material-symbols-outlined">person</span>
+          <span>Profile</span>
+        </div>
+        <div class="action-item" onclick="window.location.href='transactions.html'">
+          <span class="material-symbols-outlined">history</span>
+          <span>History</span>
+        </div>
+        <div class="action-item" onclick="window.location.href='pay-bills.html'">
+          <span class="material-symbols-outlined">receipt</span>
+          <span>Pay Bills</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Slider/Carousel (loaded from slider.html) -->
+    <div id="slider-placeholder" class="mb-4"></div>
+
+    <!-- Recent transactions and mobile nav placeholder -->
+    <div class="row">
+      <div class="col-md-8">
+        <div class="financial-card">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+            <h5 style="color: #13294b; margin: 0;">Recent Activity</h5>
+            <a href="transactions.html" style="color: #b22234; text-decoration: none; font-size: 0.9rem;">View all →</a>
+          </div>
+          <div id="recentTransactions">
+            <!-- Transactions loaded dynamically -->
+            <div class="transaction-item">
+              <div class="skeleton" style="width: 40px; height: 40px; border-radius: 12px;"></div>
+              <div class="tx-details">
+                <div class="skeleton" style="width: 120px; height: 16px;"></div>
+                <div class="skeleton" style="width: 80px; height: 12px; margin-top: 4px;"></div>
+              </div>
+              <div class="skeleton" style="width: 60px; height: 16px;"></div>
+            </div>
+            <div class="transaction-item">
+              <div class="skeleton" style="width: 40px; height: 40px; border-radius: 12px;"></div>
+              <div class="tx-details">
+                <div class="skeleton" style="width: 120px; height: 16px;"></div>
+                <div class="skeleton" style="width: 80px; height: 12px; margin-top: 4px;"></div>
+              </div>
+              <div class="skeleton" style="width: 60px; height: 16px;"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-4">
+        <div class="financial-card">
+          <h5 style="color: #13294b; margin-bottom: 1rem;">Quick Transfer</h5>
+          <form id="quickTransfer">
+            <div class="mb-3">
+              <label class="form-label">Phone number</label>
+              <input type="tel" class="form-control" placeholder="712345678" id="quickPhone">
+            </div>
+            <div class="mb-3">
+              <label class="form-label">Amount (KES)</label>
+              <input type="number" class="form-control" placeholder="0" id="quickAmount" min="10">
+            </div>
+            <button type="submit" class="btn" style="background: #13294b; color: white; width: 100%; border-radius: 40px; padding: 0.7rem;">Send Money</button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- Mobile navigation loaded dynamically -->
+  <div id="mobile-nav-placeholder"></div>
+  <!-- Footer loaded dynamically -->
+  <div id="footer-placeholder"></div>
+
+  <!-- Firebase SDK -->
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+
+  <script>
+    // Firebase config
+    const firebaseConfig = {
+      apiKey: "AIzaSyDEzRCOw2E89qjewG-vuQ_SWBWUbGdDHv8",
+      authDomain: "how-fast-bcabe.firebaseapp.com",
+      databaseURL: "https://how-fast-bcabe-default-rtdb.firebaseio.com",
+      projectId: "how-fast-bcabe",
+      storageBucket: "how-fast-bcabe.firebasestorage.app",
+      messagingSenderId: "435644508816",
+      appId: "1:435644508816:web:53e51d3cc22331996e4615"
+    };
+
+    const app = firebase.initializeApp(firebaseConfig);
+    const database = firebase.database();
+
+    // Load all components
+    async function loadComponents() {
+      try {
+        // Load header
+        const headerResp = await fetch('header.html');
+        document.getElementById('header-placeholder').innerHTML = await headerResp.text();
+        
+        // Load slider
+        const sliderResp = await fetch('slider.html');
+        document.getElementById('slider-placeholder').innerHTML = await sliderResp.text();
+        initializeSlider(); // Start slider after loading
+        
+        // Load mobile navigation
+        const mobileResp = await fetch('mobile-navigation.html');
+        document.getElementById('mobile-nav-placeholder').innerHTML = await mobileResp.text();
+        
+        // Load footer
+        const footerResp = await fetch('footer.html');
+        document.getElementById('footer-placeholder').innerHTML = await footerResp.text();
+        
+        // After header is loaded, update user info
+        updateUserInfo();
+      } catch (error) {
+        console.log('Error loading components:', error);
+      }
+    }
+
+    // Get logged in user
+    function getCurrentUser() {
+      const local = localStorage.getItem('talespay_user');
+      const session = sessionStorage.getItem('talespay_user');
+      return local ? JSON.parse(local) : session ? JSON.parse(session) : null;
+    }
+
+    // Update user info on dashboard
+    async function updateUserInfo() {
+      const user = getCurrentUser();
+      if (!user) {
+        window.location.href = 'login.html';
+        return;
+      }
+
+      document.getElementById('userName').textContent = user.fullName || 'User';
+      document.getElementById('userPhone').textContent = user.phone || '';
+
+      // Fetch latest balance from Firebase
+      try {
+        const snapshot = await database.ref(`users/${user.userId}`).once('value');
+        const userData = snapshot.val();
+        if (userData) {
+          const balance = userData.balance || 0;
+          document.getElementById('displayBalance').innerHTML = `${balance.toLocaleString()} <small>KES</small>`;
+          
+          // Update stored balance
+          user.balance = balance;
+          if (localStorage.getItem('talespay_user')) {
+            localStorage.setItem('talespay_user', JSON.stringify(user));
+          } else {
+            sessionStorage.setItem('talespay_user', JSON.stringify(user));
+          }
+        }
+      } catch (error) {
+        console.log('Error fetching balance:', error);
+      }
+
+      // Load recent transactions
+      loadRecentTransactions(user.userId);
+    }
+
+    // Load recent transactions
+    async function loadRecentTransactions(userId) {
+      try {
+        const snapshot = await database.ref('transactions')
+          .orderByChild('userId')
+          .equalTo(userId)
+          .limitToLast(5)
+          .once('value');
+        
+        const transactions = snapshot.val();
+        const container = document.getElementById('recentTransactions');
+        
+        if (!transactions || Object.keys(transactions).length === 0) {
+          container.innerHTML = `
+            <div style="text-align: center; padding: 2rem; color: #64748b;">
+              <span class="material-symbols-outlined" style="font-size: 3rem;">receipt</span>
+              <p>No transactions yet</p>
+            </div>
+          `;
+          return;
+        }
+
+        let html = '';
+        Object.values(transactions).reverse().forEach(tx => {
+          const amount = tx.amount || 0;
+          const isCredit = tx.type === 'credit' || tx.type === 'deposit';
+          html += `
+            <div class="transaction-item">
+              <div class="tx-icon" style="background: ${isCredit ? '#e8f5e9' : '#ffebee'}">
+                <span class="material-symbols-outlined" style="color: ${isCredit ? '#0f6e4a' : '#b22234'}">
+                  ${isCredit ? 'call_received' : 'call_made'}
+                </span>
+              </div>
+              <div class="tx-details">
+                <div class="title">${tx.description || (isCredit ? 'Deposit' : 'Transfer')}</div>
+                <div class="date">${new Date(tx.date || tx.createdAt).toLocaleDateString()}</div>
+              </div>
+              <div class="tx-amount ${isCredit ? 'positive' : 'negative'}">
+                ${isCredit ? '+' : '-'} KES ${amount.toLocaleString()}
+              </div>
+            </div>
+          `;
+        });
+        container.innerHTML = html;
+      } catch (error) {
+        console.log('Error loading transactions:', error);
+      }
+    }
+
+    // Initialize chart
+    function initChart() {
+      const ctx = document.getElementById('balanceChart').getContext('2d');
+      new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+          datasets: [{
+            label: 'Balance (KES)',
+            data: [1200, 1900, 1500, 2200, 2800, 2600, 3000],
+            borderColor: '#b22234',
+            backgroundColor: 'rgba(178, 34, 52, 0.05)',
+            tension: 0.4,
+            fill: true,
+            pointBackgroundColor: '#13294b'
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: { legend: { display: false } },
+          scales: { y: { beginAtZero: true, grid: { color: '#eef2f6' } } }
+        }
+      });
+    }
+
+    // Initialize slider
+    function initializeSlider() {
+      const slides = document.querySelectorAll('.slide');
+      if (!slides.length) return;
+      
+      let currentSlide = 0;
+      slides[currentSlide].classList.add('active');
+      
+      setInterval(() => {
+        slides[currentSlide].classList.remove('active');
+        currentSlide = (currentSlide + 1) % slides.length;
+        slides[currentSlide].classList.add('active');
+      }, 5000);
+    }
+
+    // Quick transfer handler
+    document.addEventListener('submit', function(e) {
+      if (e.target.id === 'quickTransfer') {
+        e.preventDefault();
+        const user = getCurrentUser();
+        if (!user) return;
+        
+        const phone = document.getElementById('quickPhone').value;
+        const amount = document.getElementById('quickAmount').value;
+        
+        if (!phone || !amount) {
+          alert('Please enter phone and amount');
+          return;
+        }
+        
+        // Store transfer data and redirect
+        sessionStorage.setItem('transfer_details', JSON.stringify({
+          to: phone,
+          amount: amount,
+          from: user.phone
+        }));
+        window.location.href = 'send-money.html';
+      }
+    });
+
+    // Check authentication and load components
+    const user = getCurrentUser();
+    if (!user) {
+      window.location.href = 'login.html';
+    } else {
+      loadComponents();
+      initChart();
+    }
+  </script>
+</body>
+</html>
