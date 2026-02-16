@@ -1,0 +1,893 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TalesPay · Transaction History</title>
+  <!-- Bootstrap 5 -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+  <!-- Material Symbols -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0,1" />
+  <!-- Font Inter -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600;14..32,700&display=swap" rel="stylesheet">
+  <!-- jsPDF for PDF generation -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <!-- html2canvas for PDF rendering -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+  <!-- Date range picker -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      background: #f3f5f9;
+      font-family: 'Inter', sans-serif;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+    .main-content {
+      flex: 1;
+      padding: 2rem 1.5rem 5rem;
+      max-width: 1400px;
+      margin: 0 auto;
+      width: 100%;
+    }
+    .page-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 2rem;
+      flex-wrap: wrap;
+      gap: 1rem;
+    }
+    .header-title {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+    .header-icon {
+      width: 60px;
+      height: 60px;
+      background: #13294b;
+      border-radius: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .header-icon .material-symbols-outlined {
+      color: white;
+      font-size: 2rem;
+    }
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 1.5rem;
+      margin-bottom: 2rem;
+    }
+    .stat-card {
+      background: white;
+      border-radius: 24px;
+      padding: 1.5rem;
+      box-shadow: 0 8px 24px rgba(19, 41, 75, 0.06);
+      position: relative;
+      overflow: hidden;
+    }
+    .stat-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 4px;
+      height: 100%;
+      background: linear-gradient(180deg, #b22234, #8b1a1a);
+    }
+    .stat-label {
+      font-size: 0.85rem;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: #64748b;
+      margin-bottom: 0.5rem;
+    }
+    .stat-value {
+      font-size: 2rem;
+      font-weight: 700;
+      color: #13294b;
+    }
+    .stat-sub {
+      font-size: 0.85rem;
+      color: #0f6e4a;
+      margin-top: 0.3rem;
+    }
+    .filter-section {
+      background: white;
+      border-radius: 24px;
+      padding: 1.5rem;
+      margin-bottom: 2rem;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1rem;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .filter-group {
+      display: flex;
+      gap: 1rem;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+    .filter-input {
+      padding: 0.7rem 1rem;
+      border: 2px solid #eef2f6;
+      border-radius: 40px;
+      font-size: 0.9rem;
+      min-width: 200px;
+    }
+    .filter-input:focus {
+      border-color: #13294b;
+      outline: none;
+    }
+    .btn-filter {
+      background: #13294b;
+      color: white;
+      border: none;
+      border-radius: 40px;
+      padding: 0.7rem 1.5rem;
+      font-weight: 500;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      cursor: pointer;
+    }
+    .btn-filter:hover {
+      background: #1e3a5f;
+    }
+    .btn-export {
+      background: white;
+      border: 2px solid #13294b;
+      color: #13294b;
+      border-radius: 40px;
+      padding: 0.7rem 1.5rem;
+      font-weight: 500;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      cursor: pointer;
+    }
+    .btn-export:hover {
+      background: #f0f3f9;
+    }
+    .transactions-table {
+      background: white;
+      border-radius: 24px;
+      overflow: hidden;
+      box-shadow: 0 8px 24px rgba(19, 41, 75, 0.06);
+    }
+    .table-header {
+      display: grid;
+      grid-template-columns: 1.5fr 1fr 1fr 1.2fr 1.2fr 0.8fr;
+      padding: 1.2rem 1.5rem;
+      background: #f8fafd;
+      font-weight: 600;
+      color: #13294b;
+      border-bottom: 2px solid #eef2f6;
+    }
+    .transaction-row {
+      display: grid;
+      grid-template-columns: 1.5fr 1fr 1fr 1.2fr 1.2fr 0.8fr;
+      padding: 1.2rem 1.5rem;
+      align-items: center;
+      border-bottom: 1px solid #eef2f6;
+      transition: background 0.2s;
+    }
+    .transaction-row:hover {
+      background: #f8fafd;
+    }
+    .transaction-row.credit {
+      border-left: 3px solid #0f6e4a;
+    }
+    .transaction-row.debit {
+      border-left: 3px solid #b22234;
+    }
+    .tx-type {
+      display: flex;
+      align-items: center;
+      gap: 0.8rem;
+    }
+    .type-icon {
+      width: 36px;
+      height: 36px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .type-icon.credit {
+      background: #e8f5e9;
+      color: #0f6e4a;
+    }
+    .type-icon.debit {
+      background: #ffebee;
+      color: #b22234;
+    }
+    .tx-amount {
+      font-weight: 600;
+    }
+    .tx-amount.credit {
+      color: #0f6e4a;
+    }
+    .tx-amount.debit {
+      color: #b22234;
+    }
+    .tx-fee {
+      font-size: 0.85rem;
+      color: #64748b;
+    }
+    .tx-id {
+      font-family: monospace;
+      font-size: 0.85rem;
+      color: #64748b;
+    }
+    .pagination {
+      display: flex;
+      justify-content: center;
+      gap: 0.5rem;
+      margin-top: 2rem;
+    }
+    .page-btn {
+      width: 40px;
+      height: 40px;
+      border-radius: 10px;
+      border: 1px solid #eef2f6;
+      background: white;
+      color: #13294b;
+      cursor: pointer;
+    }
+    .page-btn.active {
+      background: #13294b;
+      color: white;
+      border-color: #13294b;
+    }
+    .summary-card {
+      background: linear-gradient(135deg, #13294b, #1e3a5f);
+      color: white;
+      border-radius: 24px;
+      padding: 1.5rem;
+      margin-bottom: 2rem;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      gap: 2rem;
+    }
+    .summary-item {
+      text-align: center;
+    }
+    .summary-label {
+      font-size: 0.8rem;
+      opacity: 0.8;
+      margin-bottom: 0.3rem;
+    }
+    .summary-value {
+      font-size: 1.8rem;
+      font-weight: 700;
+    }
+    .no-transactions {
+      text-align: center;
+      padding: 3rem;
+      color: #64748b;
+    }
+    .loading-skeleton {
+      padding: 1rem;
+    }
+    .skeleton-row {
+      height: 60px;
+      background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+      background-size: 200% 100%;
+      animation: loading 1.5s infinite;
+      border-radius: 8px;
+      margin-bottom: 0.5rem;
+    }
+    @keyframes loading {
+      0% { background-position: 200% 0; }
+      100% { background-position: -200% 0; }
+    }
+    @media (max-width: 768px) {
+      .table-header, .transaction-row {
+        grid-template-columns: 1fr;
+        gap: 0.5rem;
+      }
+      .transaction-row {
+        padding: 1rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- Header -->
+  <div id="header-placeholder"></div>
+
+  <main class="main-content">
+    <!-- Page Header -->
+    <div class="page-header">
+      <div class="header-title">
+        <div class="header-icon">
+          <span class="material-symbols-outlined">receipt_long</span>
+        </div>
+        <div>
+          <h1 style="color: #13294b; margin: 0;">Transaction History</h1>
+          <p style="color: #64748b; margin: 0;">Your complete financial activity</p>
+        </div>
+      </div>
+      <div style="display: flex; gap: 1rem;">
+        <button class="btn-export" onclick="preparePDF()">
+          <span class="material-symbols-outlined">picture_as_pdf</span>
+          Export PDF
+        </button>
+        <button class="btn-filter" onclick="refreshTransactions()">
+          <span class="material-symbols-outlined">refresh</span>
+          Refresh
+        </button>
+      </div>
+    </div>
+
+    <!-- Summary Statistics -->
+    <div class="summary-card" id="summaryStats">
+      <div class="summary-item">
+        <div class="summary-label">Total Sent</div>
+        <div class="summary-value" id="totalSent">0</div>
+        <div style="font-size: 0.8rem; opacity: 0.7;">excl. fees</div>
+      </div>
+      <div class="summary-item">
+        <div class="summary-label">Total Received</div>
+        <div class="summary-value" id="totalReceived">0</div>
+      </div>
+      <div class="summary-item">
+        <div class="summary-label">Total Fees Paid</div>
+        <div class="summary-value" id="totalFees">0</div>
+      </div>
+      <div class="summary-item">
+        <div class="summary-label">Net Savings</div>
+        <div class="summary-value" id="totalSavings">0</div>
+        <div style="font-size: 0.8rem; opacity: 0.7;">vs M-Pesa</div>
+      </div>
+    </div>
+
+    <!-- Filter Section -->
+    <div class="filter-section">
+      <div class="filter-group">
+        <input type="text" class="filter-input" id="searchInput" placeholder="Search by name, phone, ID..." onkeyup="filterTransactions()">
+        <input type="text" class="filter-input" id="dateRange" placeholder="Select date range">
+        <select class="filter-input" id="typeFilter" onchange="filterTransactions()">
+          <option value="all">All Transactions</option>
+          <option value="credit">Money Received</option>
+          <option value="debit">Money Sent</option>
+        </select>
+      </div>
+      <div>
+        <span style="color: #64748b;" id="transactionCount">0 transactions</span>
+      </div>
+    </div>
+
+    <!-- Transactions Table -->
+    <div class="transactions-table" id="transactionsTable">
+      <div class="table-header">
+        <div>Transaction</div>
+        <div>Amount</div>
+        <div>Fee</div>
+        <div>Counterparty</div>
+        <div>Date & Time</div>
+        <div>Status</div>
+      </div>
+      <div id="transactionsList">
+        <!-- Transactions will be loaded here -->
+        <div class="loading-skeleton">
+          <div class="skeleton-row"></div>
+          <div class="skeleton-row"></div>
+          <div class="skeleton-row"></div>
+          <div class="skeleton-row"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Pagination -->
+    <div class="pagination" id="pagination"></div>
+  </main>
+
+  <!-- Mobile Navigation -->
+  <div id="mobile-nav-placeholder"></div>
+  
+  <!-- Footer -->
+  <div id="footer-placeholder"></div>
+
+  <!-- Hidden PDF Content (for generation) -->
+  <div id="pdf-content" style="display: none;">
+    <div style="padding: 2rem; font-family: 'Inter', sans-serif;">
+      <!-- PDF Header with Logo -->
+      <div style="display: flex; align-items: center; gap: 1rem; border-bottom: 2px solid #b22234; padding-bottom: 1rem; margin-bottom: 2rem;">
+        <img src="talespay.jpg" alt="TalesPay" style="height: 50px; width: auto;" onerror="this.style.display='none';">
+        <div>
+          <h1 style="color: #13294b; margin: 0;">TalesPay</h1>
+          <p style="color: #64748b; margin: 0;">Transaction Statement</p>
+        </div>
+        <div style="margin-left: auto; text-align: right;">
+          <p style="color: #13294b; font-weight: 600;" id="pdfDate"></p>
+          <p style="color: #64748b;" id="pdfRef"></p>
+        </div>
+      </div>
+
+      <!-- User Info -->
+      <div style="background: #f8fafd; padding: 1rem; border-radius: 12px; margin-bottom: 2rem;" id="pdfUserInfo">
+        <!-- Filled dynamically -->
+      </div>
+
+      <!-- Summary Stats for PDF -->
+      <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem; margin-bottom: 2rem;" id="pdfSummary">
+        <!-- Filled dynamically -->
+      </div>
+
+      <!-- Fee Structure Page -->
+      <div style="page-break-before: always; margin-top: 2rem; padding-top: 2rem;">
+        <h2 style="color: #13294b; border-left: 4px solid #b22234; padding-left: 1rem; margin-bottom: 2rem;">Fee Structure & Savings</h2>
+        
+        <table style="width: 100%; border-collapse: collapse;">
+          <thead>
+            <tr style="background: #13294b; color: white;">
+              <th style="padding: 1rem; text-align: left;">Amount Band (KES)</th>
+              <th style="padding: 1rem; text-align: right;">M-Pesa Fee</th>
+              <th style="padding: 1rem; text-align: right;">TalesPay Fee</th>
+              <th style="padding: 1rem; text-align: right;">Your Saving</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr><td style="padding: 0.5rem;">1-100</td><td style="text-align: right;">KES 11</td><td style="text-align: right;">KES 5</td><td style="text-align: right; color: #0f6e4a;">KES 6 (55%)</td></tr>
+            <tr><td style="padding: 0.5rem;">101-500</td><td style="text-align: right;">KES 15</td><td style="text-align: right;">KES 8</td><td style="text-align: right; color: #0f6e4a;">KES 7 (47%)</td></tr>
+            <tr><td style="padding: 0.5rem;">501-1,000</td><td style="text-align: right;">KES 21</td><td style="text-align: right;">KES 12</td><td style="text-align: right; color: #0f6e4a;">KES 9 (43%)</td></tr>
+            <tr><td style="padding: 0.5rem;">1,001-1,500</td><td style="text-align: right;">KES 26</td><td style="text-align: right;">KES 15</td><td style="text-align: right; color: #0f6e4a;">KES 11 (42%)</td></tr>
+            <tr><td style="padding: 0.5rem;">1,501-2,500</td><td style="text-align: right;">KES 31</td><td style="text-align: right;">KES 18</td><td style="text-align: right; color: #0f6e4a;">KES 13 (42%)</td></tr>
+            <tr><td style="padding: 0.5rem;">2,501-3,500</td><td style="text-align: right;">KES 36</td><td style="text-align: right;">KES 22</td><td style="text-align: right; color: #0f6e4a;">KES 14 (39%)</td></tr>
+            <tr><td style="padding: 0.5rem;">3,501-5,000</td><td style="text-align: right;">KES 46</td><td style="text-align: right;">KES 28</td><td style="text-align: right; color: #0f6e4a;">KES 18 (39%)</td></tr>
+            <tr><td style="padding: 0.5rem;">5,001-7,500</td><td style="text-align: right;">KES 62</td><td style="text-align: right;">KES 38</td><td style="text-align: right; color: #0f6e4a;">KES 24 (39%)</td></tr>
+            <tr><td style="padding: 0.5rem;">7,501-10,000</td><td style="text-align: right;">KES 87</td><td style="text-align: right;">KES 52</td><td style="text-align: right; color: #0f6e4a;">KES 35 (40%)</td></tr>
+            <tr><td style="padding: 0.5rem;">10,001-15,000</td><td style="text-align: right;">KES 108</td><td style="text-align: right;">KES 65</td><td style="text-align: right; color: #0f6e4a;">KES 43 (40%)</td></tr>
+            <tr><td style="padding: 0.5rem;">15,001-20,000</td><td style="text-align: right;">KES 157</td><td style="text-align: right;">KES 95</td><td style="text-align: right; color: #0f6e4a;">KES 62 (39%)</td></tr>
+            <tr><td style="padding: 0.5rem;">20,001-35,000</td><td style="text-align: right;">KES 167</td><td style="text-align: right;">KES 100</td><td style="text-align: right; color: #0f6e4a;">KES 67 (40%)</td></tr>
+            <tr><td style="padding: 0.5rem;">35,001-50,000</td><td style="text-align: right;">KES 197</td><td style="text-align: right;">KES 118</td><td style="text-align: right; color: #0f6e4a;">KES 79 (40%)</td></tr>
+            <tr><td style="padding: 0.5rem;">50,001-70,000</td><td style="text-align: right;">KES 247</td><td style="text-align: right;">KES 148</td><td style="text-align: right; color: #0f6e4a;">KES 99 (40%)</td></tr>
+          </tbody>
+        </table>
+
+        <!-- Thank You Note -->
+        <div style="margin-top: 3rem; text-align: center; padding: 2rem; background: linear-gradient(135deg, #13294b, #1e3a5f); color: white; border-radius: 24px;">
+          <h2 style="margin-bottom: 1rem;">Thank You for Choosing TalesPay</h2>
+          <p style="font-size: 1.1rem; opacity: 0.9;">"Connecting value, instantly."</p>
+          <p style="margin-top: 1rem; font-style: italic;">We appreciate your trust in our platform. Every transaction you make helps us build a better financial future for Kenya.</p>
+          <div style="margin-top: 2rem; font-size: 0.9rem; opacity: 0.7;">©2009-2026 TalesPay™ · Regulated by the Central Bank of Kenya</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Firebase SDK -->
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+
+  <script>
+    // Firebase config
+    const firebaseConfig = {
+      apiKey: "AIzaSyDEzRCOw2E89qjewG-vuQ_SWBWUbGdDHv8",
+      authDomain: "how-fast-bcabe.firebaseapp.com",
+      databaseURL: "https://how-fast-bcabe-default-rtdb.firebaseio.com",
+      projectId: "how-fast-bcabe",
+      storageBucket: "how-fast-bcabe.firebasestorage.app",
+      messagingSenderId: "435644508816",
+      appId: "1:435644508816:web:53e51d3cc22331996e4615"
+    };
+
+    const app = firebase.initializeApp(firebaseConfig);
+    const database = firebase.database();
+
+    // Global variables
+    let currentUser = null;
+    let allTransactions = [];
+    let filteredTransactions = [];
+    let currentPage = 1;
+    const itemsPerPage = 15;
+    let allUsers = {};
+
+    // Initialize date picker
+    flatpickr("#dateRange", {
+      mode: "range",
+      dateFormat: "Y-m-d",
+      onChange: function() {
+        filterTransactions();
+      }
+    });
+
+    // Load components
+    async function loadComponents() {
+      try {
+        const [headerResp, mobileResp, footerResp] = await Promise.all([
+          fetch('header.html'),
+          fetch('mobile-navigation.html'),
+          fetch('footer.html')
+        ]);
+        
+        document.getElementById('header-placeholder').innerHTML = await headerResp.text();
+        document.getElementById('mobile-nav-placeholder').innerHTML = await mobileResp.text();
+        document.getElementById('footer-placeholder').innerHTML = await footerResp.text();
+        
+        await loadUserData();
+        await loadTransactions();
+      } catch (error) {
+        console.log('Error loading components:', error);
+      }
+    }
+
+    // Get current user
+    function getCurrentUser() {
+      const local = localStorage.getItem('talespay_user');
+      const session = sessionStorage.getItem('talespay_user');
+      return local ? JSON.parse(local) : session ? JSON.parse(session) : null;
+    }
+
+    // Load user data
+    async function loadUserData() {
+      currentUser = getCurrentUser();
+      if (!currentUser) {
+        window.location.href = 'login.html';
+        return;
+      }
+
+      try {
+        const usersSnapshot = await database.ref('users').once('value');
+        allUsers = usersSnapshot.val() || {};
+      } catch (error) {
+        console.log('Error loading users:', error);
+      }
+    }
+
+    // Calculate M-Pesa fee for savings comparison
+    function calculateMpesaFee(amount) {
+      if (amount <= 100) return 11;
+      if (amount <= 500) return 15;
+      if (amount <= 1000) return 21;
+      if (amount <= 1500) return 26;
+      if (amount <= 2500) return 31;
+      if (amount <= 3500) return 36;
+      if (amount <= 5000) return 46;
+      if (amount <= 7500) return 62;
+      if (amount <= 10000) return 87;
+      if (amount <= 15000) return 108;
+      if (amount <= 20000) return 157;
+      if (amount <= 35000) return 167;
+      if (amount <= 50000) return 197;
+      if (amount <= 70000) return 247;
+      return 247;
+    }
+
+    // Load transactions
+    async function loadTransactions() {
+      try {
+        const snapshot = await database.ref('transactions')
+          .orderByChild('userId')
+          .equalTo(currentUser.userId)
+          .once('value');
+        
+        const transactions = snapshot.val() || {};
+        
+        // Convert to array and sort by date (newest first)
+        allTransactions = Object.entries(transactions)
+          .map(([id, tx]) => ({
+            id,
+            ...tx,
+            date: new Date(tx.createdAt || Date.now())
+          }))
+          .filter(tx => !tx.isFee) // Filter out fee records from user view
+          .sort((a, b) => b.date - a.date);
+        
+        filteredTransactions = [...allTransactions];
+        updateStatistics();
+        displayTransactions();
+        updateTransactionCount();
+        
+      } catch (error) {
+        console.error('Error loading transactions:', error);
+        document.getElementById('transactionsList').innerHTML = `
+          <div class="no-transactions">
+            <span class="material-symbols-outlined" style="font-size: 3rem;">error</span>
+            <p>Error loading transactions. Please refresh.</p>
+          </div>
+        `;
+      }
+    }
+
+    // Update statistics
+    function updateStatistics() {
+      let totalSent = 0;
+      let totalReceived = 0;
+      let totalFees = 0;
+      let totalSavings = 0;
+
+      allTransactions.forEach(tx => {
+        if (tx.type === 'debit') {
+          totalSent += tx.amount || 0;
+          totalFees += tx.fee || 0;
+          
+          // Calculate savings vs M-Pesa
+          const mpesaFee = calculateMpesaFee(tx.amount || 0);
+          const savings = mpesaFee - (tx.fee || 0);
+          if (savings > 0) totalSavings += savings;
+        } else if (tx.type === 'credit') {
+          totalReceived += tx.amount || 0;
+        }
+      });
+
+      document.getElementById('totalSent').innerHTML = `KES ${totalSent.toLocaleString()}`;
+      document.getElementById('totalReceived').innerHTML = `KES ${totalReceived.toLocaleString()}`;
+      document.getElementById('totalFees').innerHTML = `KES ${totalFees.toLocaleString()}`;
+      document.getElementById('totalSavings').innerHTML = `KES ${totalSavings.toLocaleString()}`;
+    }
+
+    // Filter transactions
+    function filterTransactions() {
+      const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+      const typeFilter = document.getElementById('typeFilter').value;
+      const dateRange = document.getElementById('dateRange').value;
+
+      filteredTransactions = allTransactions.filter(tx => {
+        // Type filter
+        if (typeFilter !== 'all' && tx.type !== typeFilter) return false;
+
+        // Search filter
+        if (searchTerm) {
+          const counterparty = tx.type === 'debit' ? tx.recipientName || '' : tx.senderName || '';
+          const phone = tx.type === 'debit' ? tx.to || '' : tx.from || '';
+          if (!counterparty.toLowerCase().includes(searchTerm) && !phone.includes(searchTerm)) return false;
+        }
+
+        // Date range filter
+        if (dateRange) {
+          const dates = dateRange.split(' to ');
+          if (dates.length === 2) {
+            const start = new Date(dates[0]);
+            const end = new Date(dates[1]);
+            const txDate = new Date(tx.createdAt);
+            if (txDate < start || txDate > end) return false;
+          }
+        }
+
+        return true;
+      });
+
+      currentPage = 1;
+      displayTransactions();
+      updateTransactionCount();
+    }
+
+    // Display transactions with pagination
+    function displayTransactions() {
+      const start = (currentPage - 1) * itemsPerPage;
+      const end = start + itemsPerPage;
+      const pageTransactions = filteredTransactions.slice(start, end);
+      const listContainer = document.getElementById('transactionsList');
+
+      if (filteredTransactions.length === 0) {
+        listContainer.innerHTML = `
+          <div class="no-transactions">
+            <span class="material-symbols-outlined" style="font-size: 3rem;">receipt</span>
+            <p>No transactions found</p>
+          </div>
+        `;
+        document.getElementById('pagination').innerHTML = '';
+        return;
+      }
+
+      let html = '';
+      pageTransactions.forEach(tx => {
+        const isCredit = tx.type === 'credit';
+        const counterparty = isCredit ? tx.senderName || tx.from : tx.recipientName || tx.to;
+        const phone = isCredit ? tx.from || '' : tx.to || '';
+        const amount = tx.amount || 0;
+        const fee = tx.fee || 0;
+        
+        html += `
+          <div class="transaction-row ${isCredit ? 'credit' : 'debit'}">
+            <div class="tx-type">
+              <div class="type-icon ${isCredit ? 'credit' : 'debit'}">
+                <span class="material-symbols-outlined">${isCredit ? 'call_received' : 'call_made'}</span>
+              </div>
+              <div>
+                <div style="font-weight: 500;">${isCredit ? 'Received' : 'Sent'}</div>
+                <div class="tx-id">${tx.transactionId || tx.id}</div>
+              </div>
+            </div>
+            <div>
+              <div class="tx-amount ${isCredit ? 'credit' : 'debit'}">KES ${amount.toLocaleString()}</div>
+            </div>
+            <div>
+              <div class="tx-fee">${fee > 0 ? `KES ${fee.toLocaleString()}` : '-'}</div>
+            </div>
+            <div>
+              <div style="font-weight: 500;">${counterparty || 'Unknown'}</div>
+              <div class="tx-fee">${phone}</div>
+            </div>
+            <div>
+              <div>${tx.date.toLocaleDateString()}</div>
+              <div class="tx-fee">${tx.date.toLocaleTimeString()}</div>
+            </div>
+            <div>
+              <span style="background: #e8f5e9; color: #0f6e4a; padding: 0.2rem 0.8rem; border-radius: 40px; font-size: 0.8rem;">Completed</span>
+            </div>
+          </div>
+        `;
+      });
+
+      listContainer.innerHTML = html;
+      updatePagination();
+    }
+
+    // Update pagination
+    function updatePagination() {
+      const totalPages = Math.ceil(filteredTransactions.length / itemsPerPage);
+      let paginationHtml = '';
+
+      for (let i = 1; i <= totalPages; i++) {
+        paginationHtml += `
+          <button class="page-btn ${i === currentPage ? 'active' : ''}" onclick="goToPage(${i})">${i}</button>
+        `;
+      }
+
+      document.getElementById('pagination').innerHTML = paginationHtml;
+    }
+
+    // Go to page
+    window.goToPage = function(page) {
+      currentPage = page;
+      displayTransactions();
+    };
+
+    // Update transaction count
+    function updateTransactionCount() {
+      document.getElementById('transactionCount').textContent = 
+        `${filteredTransactions.length} transaction${filteredTransactions.length !== 1 ? 's' : ''}`;
+    }
+
+    // Refresh transactions
+    window.refreshTransactions = function() {
+      loadTransactions();
+    };
+
+    // Prepare PDF
+    window.preparePDF = async function() {
+      const { jsPDF } = window.jspdf;
+      
+      // Show loading
+      document.getElementById('loadingOverlay').classList.add('active');
+      
+      try {
+        // Prepare PDF content
+        const pdfContent = document.getElementById('pdf-content').cloneNode(true);
+        pdfContent.style.display = 'block';
+        pdfContent.style.position = 'absolute';
+        pdfContent.style.left = '-9999px';
+        document.body.appendChild(pdfContent);
+
+        // Set PDF date
+        pdfContent.querySelector('#pdfDate').textContent = new Date().toLocaleDateString();
+        pdfContent.querySelector('#pdfRef').textContent = `REF: TP${Date.now()}`;
+
+        // Set user info
+        pdfContent.querySelector('#pdfUserInfo').innerHTML = `
+          <div style="display: flex; justify-content: space-between;">
+            <div>
+              <strong>Account Holder:</strong> ${currentUser.fullName}<br>
+              <strong>Phone:</strong> ${currentUser.phone}
+            </div>
+            <div>
+              <strong>Statement Period:</strong> All Transactions<br>
+              <strong>Generated:</strong> ${new Date().toLocaleString()}
+            </div>
+          </div>
+        `;
+
+        // Set summary stats
+        pdfContent.querySelector('#pdfSummary').innerHTML = `
+          <div style="background: #13294b; color: white; padding: 1rem; border-radius: 12px;">
+            <div style="font-size: 0.8rem; opacity: 0.8;">Total Sent</div>
+            <div style="font-size: 1.5rem; font-weight: 700;">${document.getElementById('totalSent').textContent}</div>
+          </div>
+          <div style="background: #13294b; color: white; padding: 1rem; border-radius: 12px;">
+            <div style="font-size: 0.8rem; opacity: 0.8;">Total Received</div>
+            <div style="font-size: 1.5rem; font-weight: 700;">${document.getElementById('totalReceived').textContent}</div>
+          </div>
+          <div style="background: #13294b; color: white; padding: 1rem; border-radius: 12px;">
+            <div style="font-size: 0.8rem; opacity: 0.8;">Fees Paid</div>
+            <div style="font-size: 1.5rem; font-weight: 700;">${document.getElementById('totalFees').textContent}</div>
+          </div>
+          <div style="background: #13294b; color: white; padding: 1rem; border-radius: 12px;">
+            <div style="font-size: 0.8rem; opacity: 0.8;">Total Saved</div>
+            <div style="font-size: 1.5rem; font-weight: 700;">${document.getElementById('totalSavings').textContent}</div>
+          </div>
+        `;
+
+        // Create PDF
+        const canvas = await html2canvas(pdfContent, {
+          scale: 2,
+          backgroundColor: '#ffffff'
+        });
+
+        const imgData = canvas.toDataURL('image/png');
+        const pdf = new jsPDF({
+          orientation: 'portrait',
+          unit: 'px',
+          format: [canvas.width / 2, canvas.height / 2]
+        });
+
+        pdf.addImage(imgData, 'PNG', 0, 0, canvas.width / 2, canvas.height / 2);
+        pdf.save(`TalesPay_Statement_${new Date().toISOString().split('T')[0]}.pdf`);
+
+        // Clean up
+        document.body.removeChild(pdfContent);
+        
+      } catch (error) {
+        console.error('PDF generation error:', error);
+        alert('Error generating PDF. Please try again.');
+      } finally {
+        document.getElementById('loadingOverlay').classList.remove('active');
+      }
+    };
+
+    // Add loading overlay to body
+    const loadingOverlay = document.createElement('div');
+    loadingOverlay.className = 'loading-overlay';
+    loadingOverlay.id = 'loadingOverlay';
+    loadingOverlay.innerHTML = `
+      <div style="text-align: center;">
+        <div class="loading-spinner"></div>
+        <p style="margin-top: 1rem; color: #13294b; font-weight: 500;">Generating PDF...</p>
+      </div>
+    `;
+    document.body.appendChild(loadingOverlay);
+
+    // Add loading spinner styles
+    const style = document.createElement('style');
+    style.textContent = `
+      .loading-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(255,255,255,0.9);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 9999;
+        opacity: 0;
+        visibility: hidden;
+        transition: all 0.3s;
+      }
+      .loading-overlay.active {
+        opacity: 1;
+        visibility: visible;
+      }
+      .loading-spinner {
+        width: 60px;
+        height: 60px;
+        border: 4px solid #f0f3f9;
+        border-top-color: #b22234;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+      }
+      @keyframes spin {
+        to { transform: rotate(360deg); }
+      }
+    `;
+    document.head.appendChild(style);
+
+    // Initialize
+    loadComponents();
+  </script>
+</body>
+</html>
