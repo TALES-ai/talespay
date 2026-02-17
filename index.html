@@ -471,5 +471,19 @@
       initChart();
     }
   </script>
+  <!-- Notification System -->
+<script src="notifications.js"></script>
+<script>
+  // Initialize notifications after user is loaded
+  function initNotifications() {
+    const user = getCurrentUser();
+    if (user && user.userId) {
+      window.notificationSystem = new NotificationSystem(database, user.userId);
+    }
+  }
+
+  // Call this after user is authenticated
+  setTimeout(initNotifications, 2000);
+</script>
 </body>
 </html>
